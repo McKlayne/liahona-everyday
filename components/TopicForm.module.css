@@ -1,0 +1,102 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formTitle {
+  font-size: 1.75rem;
+  color: var(--cyan);
+  margin: 0 0 0.5rem 0;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--base1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input,
+.textarea {
+  background-color: var(--base03);
+  border: 1px solid var(--base01);
+  border-radius: 4px;
+  padding: 0.75rem;
+  color: var(--base1);
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--cyan);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.categoryLabel {
+  padding: 0.75rem;
+  background-color: var(--base03);
+  border-radius: 4px;
+  color: var(--base0);
+  font-size: 0.875rem;
+  text-transform: capitalize;
+}
+
+.categoryLabel strong {
+  color: var(--yellow);
+}
+
+.formActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.cancelButton,
+.submitButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.cancelButton {
+  background-color: var(--base01);
+  color: var(--base1);
+}
+
+.cancelButton:hover:not(:disabled) {
+  background-color: var(--base00);
+}
+
+.submitButton {
+  background-color: var(--green);
+  color: var(--base03);
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: var(--yellow);
+  transform: translateY(-1px);
+}
+
+.cancelButton:disabled,
+.submitButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

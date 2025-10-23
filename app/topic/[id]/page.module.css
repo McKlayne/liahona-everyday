@@ -1,0 +1,317 @@
+.topicPage {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.topicHeader {
+  margin-bottom: 2rem;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  color: var(--cyan);
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+  transition: color 0.2s ease;
+}
+
+.backButton:hover {
+  color: var(--blue);
+}
+
+.topicTitle {
+  font-size: 2.5rem;
+  color: var(--base1);
+  margin-bottom: 0.5rem;
+}
+
+.categoryBadge {
+  display: inline-block;
+  background-color: var(--base01);
+  color: var(--base1);
+  padding: 0.375rem 0.875rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  text-transform: capitalize;
+}
+
+.topicDescription {
+  background-color: var(--base02);
+  border-left: 4px solid var(--blue);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.topicDescription h3 {
+  font-size: 1rem;
+  color: var(--base01);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+.topicDescription p {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: var(--base0);
+  margin: 0;
+}
+
+.studySection {
+  margin-bottom: 2rem;
+}
+
+.timerCard {
+  background-color: var(--base02);
+  border: 2px solid var(--base01);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.timerDisplay {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.activeTimer,
+.inactiveTimer {
+  padding: 2rem;
+}
+
+.timerTime,
+.totalTime {
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.activeTimer .timerTime {
+  color: var(--yellow);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.timerLabel {
+  font-size: 1rem;
+  color: var(--base01);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.timerActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.playButton,
+.stopButton,
+.completeButton {
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s ease;
+  flex: 1;
+  max-width: 200px;
+}
+
+.playButton {
+  background-color: var(--green);
+  color: var(--base03);
+}
+
+.playButton:hover {
+  background-color: var(--yellow);
+  transform: translateY(-2px);
+}
+
+.stopButton {
+  background-color: var(--red);
+  color: var(--base3);
+}
+
+.stopButton:hover {
+  background-color: var(--orange);
+  transform: translateY(-2px);
+}
+
+.completeButton {
+  background-color: var(--base01);
+  color: var(--base1);
+}
+
+.completeButton:hover {
+  background-color: var(--base00);
+}
+
+.completeButton.completed {
+  background-color: var(--green);
+  color: var(--base03);
+}
+
+.sourcesSection {
+  margin-top: 3rem;
+}
+
+.sourcesHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.sourcesHeader h2 {
+  font-size: 1.75rem;
+  color: var(--cyan);
+}
+
+.addSourceButton {
+  background-color: var(--blue);
+  color: var(--base03);
+  border: none;
+  padding: 0.625rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.addSourceButton:hover {
+  background-color: var(--cyan);
+  transform: translateY(-1px);
+}
+
+.addSourceForm {
+  background-color: var(--base02);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.formRow {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.sourceInput {
+  flex: 1;
+  background-color: var(--base03);
+  border: 1px solid var(--base01);
+  border-radius: 4px;
+  padding: 0.625rem;
+  color: var(--base1);
+  font-size: 0.875rem;
+}
+
+.sourceInput:focus {
+  outline: none;
+  border-color: var(--cyan);
+}
+
+.saveSourceButton,
+.cancelSourceButton {
+  padding: 0.625rem 1.25rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.saveSourceButton {
+  background-color: var(--green);
+  color: var(--base03);
+}
+
+.saveSourceButton:hover {
+  background-color: var(--yellow);
+}
+
+.cancelSourceButton {
+  background-color: var(--base01);
+  color: var(--base1);
+}
+
+.cancelSourceButton:hover {
+  background-color: var(--base00);
+}
+
+.sourcesList {
+  display: grid;
+  gap: 1rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--base01);
+  font-size: 1rem;
+  background-color: var(--base02);
+  border-radius: 8px;
+  border: 1px dashed var(--base01);
+}
+
+.sourceCard {
+  background-color: var(--base02);
+  border: 1px solid var(--base01);
+  border-radius: 8px;
+  padding: 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.sourceCard:hover {
+  border-color: var(--cyan);
+  transform: translateX(4px);
+}
+
+.sourceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.sourceTitle {
+  font-size: 1.125rem;
+  color: var(--base1);
+  margin: 0;
+}
+
+.sourceType {
+  background-color: var(--base01);
+  color: var(--base0);
+  padding: 0.25rem 0.625rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sourceLink {
+  color: var(--blue);
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.sourceLink:hover {
+  color: var(--cyan);
+}
+
+.notFound {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--base01);
+  font-size: 1.5rem;
+}
