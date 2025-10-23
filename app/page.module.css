@@ -1,0 +1,118 @@
+.home {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.quoteSection {
+  background-color: var(--base02);
+  border-left: 4px solid var(--yellow);
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.quote {
+  margin: 0;
+}
+
+.quote p {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--base1);
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+
+.quoteAuthor {
+  font-size: 1rem;
+  color: var(--yellow);
+  font-style: normal;
+  text-align: right;
+}
+
+.summarySection {
+  margin-top: 2rem;
+}
+
+.sectionTitle {
+  font-size: 2rem;
+  color: var(--cyan);
+  margin-bottom: 1.5rem;
+}
+
+.overallStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.statCard {
+  background-color: var(--base02);
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid var(--base01);
+}
+
+.statValue {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 0.5rem;
+}
+
+.statLabel {
+  font-size: 1rem;
+  color: var(--base0);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.categoryTitle {
+  font-size: 1.5rem;
+  color: var(--base1);
+  margin-bottom: 1.5rem;
+}
+
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.categoryCard {
+  background-color: var(--base02);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--base01);
+}
+
+.categoryName {
+  font-size: 1.25rem;
+  color: var(--blue);
+  margin-bottom: 1rem;
+  text-transform: capitalize;
+}
+
+.categoryStats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.categoryStat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.categoryStatLabel {
+  color: var(--base0);
+  font-size: 0.875rem;
+}
+
+.categoryStatValue {
+  color: var(--base1);
+  font-weight: 600;
+}
