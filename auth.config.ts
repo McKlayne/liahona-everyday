@@ -9,21 +9,24 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isOnLoginPage = nextUrl.pathname === '/login';
+      const isOnWelcomePage = nextUrl.pathname === '/welcome';
+      const isOnPublicPage = isOnLoginPage || isOnWelcomePage;
       const isOnAuthRoute = nextUrl.pathname.startsWith('/api/auth');
+      const isOnRegisterRoute = nextUrl.pathname === '/api/register';
 
-      // Allow access to auth routes
-      if (isOnAuthRoute) {
+      // Allow access to auth routes and register route
+      if (isOnAuthRoute || isOnRegisterRoute) {
         return true;
       }
 
-      // Redirect logged-in users away from login page
-      if (isOnLoginPage && isLoggedIn) {
-        return Response.redirect(new URL('/', nextUrl));
+      // Allow access to public pages (welcome and login)
+      if (isOnPublicPage) {
+        return true;
       }
 
-      // Redirect unauthenticated users to login page
-      if (!isOnLoginPage && !isLoggedIn) {
-        return false;
+      // Redirect unauthenticated users to welcome page
+      if (!isLoggedIn) {
+        return Response.redirect(new URL('/welcome', nextUrl));
       }
 
       return true;
