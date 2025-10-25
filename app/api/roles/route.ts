@@ -7,7 +7,12 @@ import { Role } from '@/lib/types';
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
+
+    // Debug logging
+    console.log('Roles API - Session:', JSON.stringify(session, null, 2));
+
     if (!session?.user?.id) {
+      console.error('Roles API - No user ID in session:', session);
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -24,8 +29,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ roles });
   } catch (error) {
     console.error('GET /api/roles error:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json(
-      { error: 'Failed to fetch roles' },
+      { error: 'Failed to fetch roles', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
@@ -35,7 +41,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
+
+    console.log('POST Roles API - Session:', JSON.stringify(session, null, 2));
+
     if (!session?.user?.id) {
+      console.error('POST Roles API - No user ID in session:', session);
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -82,6 +92,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ role: newRole }, { status: 201 });
   } catch (error) {
     console.error('POST /api/roles error:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
 
     // Check for unique constraint violation
     if (error instanceof Error && error.message.includes('unique constraint')) {
@@ -92,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Failed to create role' },
+      { error: 'Failed to create role', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

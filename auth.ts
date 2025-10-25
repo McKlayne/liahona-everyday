@@ -58,9 +58,9 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      // Add user ID to session
-      if (session.user && token.sub) {
-        session.user.id = (token.id || token.sub) as string;
+      // Add user ID to session - always set it if we have a session
+      if (session.user) {
+        session.user.id = (token.id || token.sub || token.email) as string;
       }
       return session;
     },
