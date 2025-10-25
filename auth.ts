@@ -42,15 +42,24 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user, account, profile }) {
-      if (user) {
-        token.id = user.id;
+      // Initial sign in
+      if (account && user) {
+        // For OAuth providers (like Google), use the provider's account ID
+        // For credentials provider, use the user.id
+        const userId = account.provider === 'google'
+          ? account.providerAccountId
+          : user.id;
+
+        token.id = userId;
         token.name = user.name;
         token.email = user.email;
-        token.picture = user.image;
-      }
-      // Capture profile picture from OAuth providers (Google uses 'picture')
-      if (account?.provider === 'google' && profile) {
-        token.picture = (profile as any).picture || user?.image;
+
+        // Capture profile picture from OAuth providers (Google uses 'picture')
+        if (account.provider === 'google' && profile) {
+          token.picture = (profile as any).picture;
+        } else {
+          token.picture = user.image;
+        }
       }
       return token;
     },
