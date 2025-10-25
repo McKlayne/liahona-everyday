@@ -70,7 +70,10 @@ export const rolesApi = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(role),
     });
-    if (!response.ok) throw new Error('Failed to create role');
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create role');
+    }
     const data = await response.json();
     return data.role;
   },
