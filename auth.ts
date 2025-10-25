@@ -5,6 +5,7 @@ import { verifyCredentials } from './lib/users';
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
+  debug: process.env.NODE_ENV === 'development',
   session: {
     strategy: 'jwt',
   },
@@ -43,32 +44,23 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   callbacks: {
     async jwt({ token, user, account, profile }) {
       // Initial sign in
-      if (account && user) {
-        // For OAuth providers (like Google), use the provider's account ID
-        // For credentials provider, use the user.id
-        const userId = account.provider === 'google'
-          ? account.providerAccountId
-          : user.id;
-
-        token.id = userId;
-        token.name = user.name;
-        token.email = user.email;
-
-        // Capture profile picture from OAuth providers (Google uses 'picture')
-        if (account.provider === 'google' && profile) {
-          token.picture = (profile as any).picture;
-        } else {
-          token.picture = user.image;
-        }
+      if (user) {
+        token.id = (user.id || token.sub) as string;
       }
+
+      // Capture profile picture from OAuth providers
+      if (account?.provider === 'google' && profile) {
+        token.picture = (profile as any).picture;
+      } else if (user?.image) {
+        token.picture = user.image;
+      }
+
       return token;
     },
     async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.name = token.name as string;
-        session.user.email = token.email as string;
-        session.user.image = token.picture as string;
+      if (session.user) {
+        session.user.id = (token.id || token.sub) as string;
+        session.user.image = token.picture as string | undefined;
       }
       return session;
     },
