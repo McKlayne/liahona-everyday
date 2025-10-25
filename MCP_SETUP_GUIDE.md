@@ -18,7 +18,18 @@ Once set up, you can chat with Claude and ask it to:
 2. ✅ Liahona Everyday app running on `http://localhost:3000`
 3. ✅ Node.js installed on your computer
 
-## Step 1: Start Your App
+## Step 1: Install MCP Server Dependencies
+
+First, install the required packages for the MCP server:
+
+```bash
+cd mcp-server
+npm install
+```
+
+This only needs to be done once when you first clone the repository.
+
+## Step 2: Start Your App
 
 Make sure your Liahona Everyday app is running:
 
@@ -29,7 +40,7 @@ npm run dev
 
 Keep this running in a terminal window.
 
-## Step 2: Configure Claude Desktop
+## Step 3: Configure Claude Desktop
 
 ### macOS
 
@@ -77,11 +88,11 @@ Keep this running in a terminal window.
 
 3. Save the file.
 
-## Step 3: Restart Claude Desktop
+## Step 4: Restart Claude Desktop
 
 Close and reopen Claude Desktop completely for the changes to take effect.
 
-## Step 4: Verify Connection
+## Step 5: Verify Connection
 
 In Claude Desktop, look for a 🔌 icon or MCP indicator. You should see "liahona-everyday" listed as a connected server.
 
