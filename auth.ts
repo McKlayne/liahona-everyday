@@ -48,9 +48,9 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         token.email = user.email;
         token.picture = user.image;
       }
-      // Capture profile picture from OAuth providers
-      if (account && profile) {
-        token.picture = profile.image || profile.picture || user?.image;
+      // Capture profile picture from OAuth providers (Google uses 'picture')
+      if (account?.provider === 'google' && profile) {
+        token.picture = (profile as any).picture || user?.image;
       }
       return token;
     },
