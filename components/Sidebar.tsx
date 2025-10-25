@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { rolesApi } from '@/lib/api';
-import { storage } from '@/lib/storage';
-import { Role, User } from '@/lib/types';
+import { Role } from '@/lib/types';
 import RoleManager from './RoleManager';
 import LiahonaIcon from './LiahonaIcon';
 import styles from './Sidebar.module.css';
@@ -13,15 +13,13 @@ import styles from './Sidebar.module.css';
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { data: session } = useSession();
   const [roles, setRoles] = useState<Role[]>([]);
-  const [user, setUser] = useState<User | null>(null);
   const [showRoleManager, setShowRoleManager] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | undefined>();
 
   useEffect(() => {
     loadRoles();
-    // Note: User/auth still uses localStorage for now (not part of API yet)
-    setUser(storage.getUser());
   }, []);
 
   const loadRoles = async () => {
@@ -138,26 +136,32 @@ export default function Sidebar() {
         </div>
       )}
 
-      {user && (
+      {session?.user && (
         <div className={styles.userSection}>
-          <div className={styles.userInfo}>
-            <div className={styles.userAvatar}>
-              {user.name.charAt(0).toUpperCase()}
-            </div>
-            <div className={styles.userData}>
-              <div className={styles.userName}>{user.name}</div>
-              <div className={styles.userEmail}>{user.email}</div>
-            </div>
-          </div>
-          <Link
-            href="/settings"
-            className={`${styles.settingsLink} ${
-              pathname === '/settings' ? styles.active : ''
-            }`}
+          <button
+            onClick={() => router.push('/settings')}
+            className={styles.userButton}
           >
-            <span className={styles.icon}>⚙️</span>
-            <span>Settings</span>
-          </Link>
+            <div className={styles.userInfo}>
+              <div className={styles.userAvatar}>
+                {session.user.image ? (
+                  <img
+                    src={session.user.image}
+                    alt={session.user.name || 'User'}
+                    className={styles.userImage}
+                  />
+                ) : (
+                  <span className={styles.userInitial}>
+                    {session.user.name?.charAt(0).toUpperCase() || '?'}
+                  </span>
+                )}
+              </div>
+              <div className={styles.userData}>
+                <div className={styles.userName}>{session.user.name}</div>
+                <div className={styles.userEmail}>{session.user.email}</div>
+              </div>
+            </div>
+          </button>
         </div>
       )}
     </aside>

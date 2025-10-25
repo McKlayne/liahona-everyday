@@ -1,15 +1,88 @@
 'use client';
 
+import { useState } from 'react';
 import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import LiahonaIcon from '@/components/LiahonaIcon';
 import styles from './login.module.css';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
   const handleGoogleSignIn = async () => {
     try {
       await signIn('google', { callbackUrl: '/' });
     } catch (error) {
       console.error('Sign in error:', error);
+    }
+  };
+
+  const handleEmailSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError('Invalid email or password');
+      } else {
+        router.push('/');
+      }
+    } catch (error) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Registration failed');
+        setLoading(false);
+        return;
+      }
+
+      // Auto sign in after registration
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError('Registration successful, but sign in failed. Please try logging in.');
+      } else {
+        router.push('/');
+      }
+    } catch (error) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,6 +118,78 @@ export default function LoginPage() {
             </svg>
             Continue with Google
           </button>
+
+          <div className={styles.divider}>
+            <span>or</span>
+          </div>
+
+          <div className={styles.tabContainer}>
+            <button
+              className={`${styles.tab} ${mode === 'signin' ? styles.activeTab : ''}`}
+              onClick={() => {
+                setMode('signin');
+                setError('');
+              }}
+            >
+              Sign In
+            </button>
+            <button
+              className={`${styles.tab} ${mode === 'signup' ? styles.activeTab : ''}`}
+              onClick={() => {
+                setMode('signup');
+                setError('');
+              }}
+            >
+              Sign Up
+            </button>
+          </div>
+
+          <form onSubmit={mode === 'signin' ? handleEmailSignIn : handleSignUp} className={styles.form}>
+            {mode === 'signup' && (
+              <div className={styles.formGroup}>
+                <label htmlFor="name" className={styles.label}>Name</label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className={styles.input}
+                  required
+                />
+              </div>
+            )}
+
+            <div className={styles.formGroup}>
+              <label htmlFor="email" className={styles.label}>Email</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={styles.input}
+                required
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="password" className={styles.label}>Password</label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={styles.input}
+                required
+                minLength={6}
+              />
+            </div>
+
+            {error && <div className={styles.error}>{error}</div>}
+
+            <button type="submit" className={styles.submitButton} disabled={loading}>
+              {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
+            </button>
+          </form>
         </div>
 
         <div className={styles.quote}>
