@@ -43,25 +43,34 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user, account, profile }) {
-      // Initial sign in
+      // On initial sign in, user object is available
       if (user) {
-        token.id = (user.id || token.sub) as string;
-      }
+        // For credentials provider, user.id is set by authorize()
+        // For OAuth, token.sub is automatically set by NextAuth
+        token.id = (user.id || token.sub || user.email) as string;
 
-      // Capture profile picture from OAuth providers
-      if (account?.provider === 'google' && profile) {
-        token.picture = (profile as any).picture;
-      } else if (user?.image) {
-        token.picture = user.image;
+        // Capture profile picture
+        if (account?.provider === 'google' && profile) {
+          token.picture = (profile as any).picture;
+        } else if (user.image) {
+          token.picture = user.image;
+        }
       }
 
       return token;
     },
     async session({ session, token }) {
+      // Add custom fields to session
       if (session.user) {
-        session.user.id = (token.id || token.sub) as string;
-        session.user.image = token.picture as string | undefined;
+        // Use token.id if available, fallback to token.sub, then email
+        session.user.id = (token.id || token.sub || token.email) as string;
+
+        // Add profile picture if available
+        if (token.picture) {
+          session.user.image = token.picture as string;
+        }
       }
+
       return session;
     },
   },
