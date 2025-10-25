@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "liahona-everyday": {
+      "command": "node",
+      "args": [
+        "/Users/mcklaynemarshall/app_ideas/liahona-everyday/mcp-server/index.js"
+      ]
+    }
+  }
+}

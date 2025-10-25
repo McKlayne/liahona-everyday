@@ -1,9 +1,18 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import AuthGuard from '@/components/AuthGuard'
+import ThemeProvider from '@/components/ThemeProvider'
 
 export const metadata: Metadata = {
   title: 'Liahona Everyday - Book of Mormon Study',
-  description: 'Personal study platform for the Book of Mormon',
+  description: 'Your personal Book of Mormon study companion. Organize topics by life roles, discover relevant scriptures, and track your spiritual growth.',
+  keywords: ['Book of Mormon', 'LDS', 'scripture study', 'Liahona', 'spiritual growth', 'faith'],
+  authors: [{ name: 'Liahona Everyday' }],
+  openGraph: {
+    title: 'Liahona Everyday - Book of Mormon Study',
+    description: 'Your personal Book of Mormon study companion',
+    type: 'website',
+  },
 }
 
 export default function RootLayout({
@@ -13,7 +22,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <ThemeProvider>
+          <AuthGuard>{children}</AuthGuard>
+        </ThemeProvider>
+      </body>
     </html>
   )
 }

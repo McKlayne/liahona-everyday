@@ -1,0 +1,15 @@
+{
+  "name": "liahona-everyday-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Liahona Everyday Book of Mormon study app",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0"
+  },
+  "keywords": ["mcp", "model-context-protocol", "book-of-mormon", "scripture-study"],
+  "author": "Liahona Everyday"
+}

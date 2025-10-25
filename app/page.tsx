@@ -2,24 +2,44 @@
 
 import { useEffect, useState } from 'react';
 import MainLayout from '@/components/MainLayout';
-import { storage } from '@/lib/storage';
-import { Topic, Category } from '@/lib/types';
+import { topicsApi, rolesApi } from '@/lib/api';
+import { Topic, Role } from '@/lib/types';
 import styles from './page.module.css';
 
 export default function Home() {
   const [topics, setTopics] = useState<Topic[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setTopics(storage.getTopics());
+    async function loadData() {
+      try {
+        const [topicsData, rolesData] = await Promise.all([
+          topicsApi.getAll(),
+          rolesApi.getAll(),
+        ]);
+        setTopics(topicsData);
+        setRoles(rolesData.sort((a, b) => a.order - b.order));
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
   }, []);
 
-  const getCategoryStats = (category: Category) => {
-    const categoryTopics = topics.filter(t => t.category === category);
-    const totalTime = categoryTopics.reduce((sum, t) => sum + t.totalTimeSpent, 0);
-    const completed = categoryTopics.filter(t => t.completed).length;
+  const getRoleStats = (role: Role) => {
+    // Find topics that match this role by slug or by legacy category
+    const roleTopics = topics.filter(t =>
+      t.roleId === role.id ||
+      t.category === role.slug
+    );
+    const totalTime = roleTopics.reduce((sum, t) => sum + t.totalTimeSpent, 0);
+    const completed = roleTopics.filter(t => t.completed).length;
 
     return {
-      total: categoryTopics.length,
+      total: roleTopics.length,
       completed,
       timeSpent: formatTime(totalTime),
     };
@@ -35,11 +55,19 @@ export default function Home() {
     return `${minutes}m`;
   };
 
-  const categories: Category[] = ['personal', 'marriage', 'parenting', 'calling', 'work'];
-
   const totalTopics = topics.length;
   const completedTopics = topics.filter(t => t.completed).length;
   const totalTimeSpent = topics.reduce((sum, t) => sum + t.totalTimeSpent, 0);
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className={styles.home}>
+          <div style={{ textAlign: 'center', padding: '2rem' }}>Loading...</div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -71,14 +99,15 @@ export default function Home() {
             </div>
           </div>
 
-          <h3 className={styles.categoryTitle}>Topics by Category</h3>
+          <h3 className={styles.categoryTitle}>Topics by Role</h3>
           <div className={styles.categoryGrid}>
-            {categories.map(category => {
-              const stats = getCategoryStats(category);
+            {roles.map(role => {
+              const stats = getRoleStats(role);
               return (
-                <div key={category} className={styles.categoryCard}>
+                <div key={role.id} className={styles.categoryCard}>
                   <h4 className={styles.categoryName}>
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                    <span className={styles.roleIcon}>{role.icon}</span>
+                    {role.label}
                   </h4>
                   <div className={styles.categoryStats}>
                     <div className={styles.categoryStat}>

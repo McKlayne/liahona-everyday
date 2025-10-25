@@ -1,0 +1,223 @@
+.authContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--base03) 0%, var(--base02) 100%);
+  padding: 2rem;
+}
+
+.authCard {
+  background: var(--base02);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  max-width: 480px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.authHeader {
+  background: linear-gradient(135deg, var(--cyan) 0%, var(--blue) 100%);
+  padding: 2.5rem 2rem;
+  text-align: center;
+  color: var(--base03);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.logoIcon {
+  font-size: 2.5rem;
+}
+
+.logoText {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.form {
+  padding: 2rem;
+}
+
+.formTitle {
+  font-size: 1.5rem;
+  color: var(--base1);
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+}
+
+.oauthButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.googleButton,
+.appleButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--base01);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+  color: #3c4043;
+}
+
+.googleButton:hover {
+  background: #f8f9fa;
+  border-color: #dadce0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.appleButton {
+  background: #000;
+  color: white;
+  border-color: #000;
+}
+
+.appleButton:hover {
+  background: #1a1a1a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.oauthIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.divider {
+  position: relative;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--base01);
+}
+
+.dividerText {
+  position: relative;
+  display: inline-block;
+  padding: 0 1rem;
+  background: var(--base02);
+  color: var(--base01);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.formGroup {
+  margin-bottom: 1.25rem;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--base1);
+  font-size: 0.875rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.875rem;
+  border: 2px solid var(--base01);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: var(--base03);
+  color: var(--base1);
+  transition: border-color 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--cyan);
+}
+
+.submitButton {
+  width: 100%;
+  padding: 1rem;
+  background: var(--cyan);
+  color: var(--base03);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.submitButton:hover {
+  background: var(--blue);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(38, 139, 210, 0.3);
+}
+
+.toggleAuth {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--base0);
+  font-size: 0.875rem;
+}
+
+.toggleButton {
+  background: none;
+  border: none;
+  color: var(--cyan);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.toggleButton:hover {
+  color: var(--blue);
+}
+
+.authQuote {
+  background: var(--base03);
+  padding: 1.5rem 2rem;
+  border-top: 1px solid var(--base01);
+}
+
+.authQuote p {
+  font-size: 0.875rem;
+  color: var(--base0);
+  font-style: italic;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.6;
+}
+
+.authQuote footer {
+  font-size: 0.75rem;
+  color: var(--yellow);
+  font-style: normal;
+  text-align: right;
+}

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import MainLayout from '@/components/MainLayout';
-import { storage } from '@/lib/storage';
+import { topicsApi } from '@/lib/api';
 import { Topic, Source } from '@/lib/types';
 import styles from './page.module.css';
 
@@ -21,11 +21,15 @@ export default function TopicPage() {
   const [newSourceUrl, setNewSourceUrl] = useState('');
 
   useEffect(() => {
-    const topics = storage.getTopics();
-    const foundTopic = topics.find(t => t.id === topicId);
-    if (foundTopic) {
-      setTopic(foundTopic);
+    async function loadTopic() {
+      try {
+        const foundTopic = await topicsApi.getById(topicId);
+        setTopic(foundTopic);
+      } catch (error) {
+        console.error('Failed to load topic:', error);
+      }
     }
+    loadTopic();
   }, [topicId]);
 
   useEffect(() => {
@@ -48,44 +52,41 @@ export default function TopicPage() {
     setCurrentSessionTime(0);
   };
 
-  const handleStopStudy = () => {
+  const handleStopStudy = async () => {
     if (!topic || sessionStartTime === null) return;
 
     setIsStudying(false);
 
-    const updatedTopic = {
-      ...topic,
-      totalTimeSpent: topic.totalTimeSpent + currentSessionTime,
-    };
+    try {
+      const updatedTopic = await topicsApi.update(topic.id, {
+        totalTimeSpent: topic.totalTimeSpent + currentSessionTime,
+      });
+      setTopic(updatedTopic);
 
-    storage.saveTopic(updatedTopic);
-    setTopic(updatedTopic);
-
-    // Save session
-    storage.saveSession({
-      topicId: topic.id,
-      startTime: sessionStartTime,
-      endTime: Date.now(),
-      duration: currentSessionTime,
-    });
+      // TODO: Add API endpoint for sessions if needed
+      // For now, we just update the topic time
+    } catch (error) {
+      console.error('Failed to update topic:', error);
+    }
 
     setCurrentSessionTime(0);
     setSessionStartTime(null);
   };
 
-  const handleToggleCompleted = () => {
+  const handleToggleCompleted = async () => {
     if (!topic) return;
 
-    const updatedTopic = {
-      ...topic,
-      completed: !topic.completed,
-    };
-
-    storage.saveTopic(updatedTopic);
-    setTopic(updatedTopic);
+    try {
+      const updatedTopic = await topicsApi.update(topic.id, {
+        completed: !topic.completed,
+      });
+      setTopic(updatedTopic);
+    } catch (error) {
+      console.error('Failed to update topic:', error);
+    }
   };
 
-  const handleAddSource = (e: React.FormEvent) => {
+  const handleAddSource = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!topic || !newSourceTitle.trim() || !newSourceUrl.trim()) {
@@ -100,16 +101,16 @@ export default function TopicPage() {
       url: newSourceUrl.trim(),
     };
 
-    const updatedTopic = {
-      ...topic,
-      sources: [...topic.sources, newSource],
-    };
-
-    storage.saveTopic(updatedTopic);
-    setTopic(updatedTopic);
-    setNewSourceTitle('');
-    setNewSourceUrl('');
-    setShowAddSource(false);
+    try {
+      const updatedTopic = await topicsApi.addSources(topic.id, [newSource]);
+      setTopic(updatedTopic);
+      setNewSourceTitle('');
+      setNewSourceUrl('');
+      setShowAddSource(false);
+    } catch (error) {
+      console.error('Failed to add source:', error);
+      alert('Failed to add source. Please try again.');
+    }
   };
 
   const formatTime = (seconds: number): string => {

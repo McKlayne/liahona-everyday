@@ -1,0 +1,96 @@
+.iconPicker {
+  position: relative;
+  width: 100%;
+}
+
+.selectedIcon {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #f5f2e8;
+  border: 2px solid #d4c5a9;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.selectedIcon:hover {
+  background: #f0ede0;
+  border-color: #c4b599;
+}
+
+.iconDisplay {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.changeText {
+  color: #6b5345;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.iconGrid {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.5rem;
+  padding: 1rem;
+  background: white;
+  border: 2px solid #d4c5a9;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  gap: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.iconOption {
+  font-size: 1.75rem;
+  padding: 0.5rem;
+  background: #f9f6f0;
+  border: 2px solid #e8e0d0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+}
+
+.iconOption:hover {
+  background: #f0ede0;
+  border-color: #d4c5a9;
+  transform: scale(1.1);
+}
+
+.iconOption.selected {
+  background: #8b7355;
+  border-color: #6b5345;
+  color: white;
+}
+
+.iconGrid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.iconGrid::-webkit-scrollbar-track {
+  background: #f5f2e8;
+  border-radius: 4px;
+}
+
+.iconGrid::-webkit-scrollbar-thumb {
+  background: #c4b599;
+  border-radius: 4px;
+}
+
+.iconGrid::-webkit-scrollbar-thumb:hover {
+  background: #b4a589;
+}

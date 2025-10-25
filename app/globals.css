@@ -1,13 +1,16 @@
-/* Solarized Dark Theme Variables */
+/* Solarized Color Palette */
 :root {
-  --base03: #002b36;
-  --base02: #073642;
-  --base01: #586e75;
-  --base00: #657b83;
-  --base0: #839496;
-  --base1: #93a1a1;
-  --base2: #eee8d5;
-  --base3: #fdf6e3;
+  /* Base colors (same for both themes) */
+  --sol-base03: #002b36;
+  --sol-base02: #073642;
+  --sol-base01: #586e75;
+  --sol-base00: #657b83;
+  --sol-base0: #839496;
+  --sol-base1: #93a1a1;
+  --sol-base2: #eee8d5;
+  --sol-base3: #fdf6e3;
+
+  /* Accent colors (same for both themes) */
   --yellow: #b58900;
   --orange: #cb4b16;
   --red: #dc322f;
@@ -16,6 +19,33 @@
   --blue: #268bd2;
   --cyan: #2aa198;
   --green: #859900;
+}
+
+/* Solarized Dark Theme (default) */
+:root,
+body[data-theme="dark"],
+body[data-theme="auto"] {
+  --base03: var(--sol-base03);
+  --base02: var(--sol-base02);
+  --base01: var(--sol-base01);
+  --base00: var(--sol-base00);
+  --base0: var(--sol-base0);
+  --base1: var(--sol-base1);
+  --base2: var(--sol-base2);
+  --base3: var(--sol-base3);
+}
+
+/* Solarized Light Theme */
+body[data-theme="light"] {
+  /* Reverse the color mapping for light theme */
+  --base03: var(--sol-base3);  /* lightest background */
+  --base02: var(--sol-base2);  /* background highlights */
+  --base01: var(--sol-base1);  /* emphasized content */
+  --base00: var(--sol-base0);  /* body text */
+  --base0: var(--sol-base00);  /* primary content */
+  --base1: var(--sol-base01);  /* comments / secondary */
+  --base2: var(--sol-base02);  /* background highlights (dark) */
+  --base3: var(--sol-base03);  /* darkest - for emphasis */
 }
 
 * {

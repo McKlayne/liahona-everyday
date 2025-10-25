@@ -93,6 +93,13 @@
   color: var(--blue);
   margin-bottom: 1rem;
   text-transform: capitalize;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.roleIcon {
+  font-size: 1.5rem;
 }
 
 .categoryStats {

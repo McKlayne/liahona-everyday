@@ -1,0 +1,205 @@
+.settingsPage {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2.5rem;
+  color: var(--cyan);
+  margin: 0;
+}
+
+.settingsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section {
+  background: var(--base02);
+  border: 1px solid var(--base01);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  color: var(--base1);
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--base01);
+}
+
+.settingGroup {
+  margin-bottom: 1.5rem;
+}
+
+.settingGroup:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  display: block;
+  font-weight: 600;
+  color: var(--base1);
+  margin-bottom: 0.5rem;
+}
+
+.value {
+  color: var(--base0);
+  padding: 0.75rem;
+  background: var(--base03);
+  border-radius: 6px;
+  border: 1px solid var(--base01);
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.optionButton {
+  padding: 0.75rem 1.5rem;
+  background: var(--base03);
+  border: 2px solid var(--base01);
+  border-radius: 8px;
+  color: var(--base0);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.optionButton:hover {
+  border-color: var(--cyan);
+  color: var(--base1);
+}
+
+.optionButton.active {
+  background: var(--cyan);
+  border-color: var(--cyan);
+  color: var(--base03);
+}
+
+.select {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--base03);
+  border: 2px solid var(--base01);
+  border-radius: 8px;
+  color: var(--base1);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--cyan);
+}
+
+.toggleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.description {
+  font-size: 0.875rem;
+  color: var(--base01);
+  margin: 0.25rem 0 0 0;
+}
+
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--base01);
+  transition: 0.3s;
+  border-radius: 28px;
+}
+
+.slider:before {
+  position: absolute;
+  content: '';
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.toggle input:checked + .slider {
+  background-color: var(--cyan);
+}
+
+.toggle input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.saveButton,
+.logoutButton {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.saveButton {
+  background: var(--cyan);
+  color: var(--base03);
+  flex: 1;
+}
+
+.saveButton:hover:not(:disabled) {
+  background: var(--blue);
+  transform: translateY(-1px);
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.logoutButton {
+  background: var(--red);
+  color: white;
+}
+
+.logoutButton:hover {
+  background: #cc241d;
+  transform: translateY(-1px);
+}

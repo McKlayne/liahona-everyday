@@ -95,6 +95,96 @@ export function generateSuggestedSources(
 }
 
 /**
+ * Match topic keywords to popular topics
+ */
+function matchTopicKeywords(title: string, description: string): string[] {
+  const text = `${title} ${description}`.toLowerCase();
+  const matches: string[] = [];
+
+  const topicKeywords = Object.keys(popularTopics);
+
+  for (const keyword of topicKeywords) {
+    if (text.includes(keyword)) {
+      matches.push(keyword);
+    }
+  }
+
+  return matches;
+}
+
+/**
+ * Generate suggested sources asynchronously with better recommendations
+ * This searches for specific Book of Mormon chapters based on topic keywords
+ * and ensures Book of Mormon sources are always first
+ */
+export async function generateSuggestedSourcesAsync(
+  title: string,
+  description: string
+): Promise<Source[]> {
+  // Simulate processing time for the loading animation (1.5-2.5 seconds)
+  await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
+
+  const sources: Source[] = [];
+  const searchTerms = generateSearchTerms(description);
+  const primaryTerm = title || searchTerms[0] || 'faith';
+
+  // Match keywords to popular topics
+  const matchedKeywords = matchTopicKeywords(title, description);
+
+  // Add specific Book of Mormon chapters if we found matches
+  if (matchedKeywords.length > 0) {
+    const primaryKeyword = matchedKeywords[0] as keyof typeof popularTopics;
+    const topicSources = popularTopics[primaryKeyword];
+
+    if (topicSources && topicSources.length > 0) {
+      // Add the most relevant BOM chapter
+      sources.push({
+        id: `bofm-specific-${Date.now()}-1`,
+        type: 'scripture',
+        title: topicSources[0].title,
+        url: topicSources[0].url,
+      });
+
+      // Add the second BOM chapter if available
+      if (topicSources.length > 1) {
+        sources.push({
+          id: `bofm-specific-${Date.now()}-2`,
+          type: 'scripture',
+          title: topicSources[1].title,
+          url: topicSources[1].url,
+        });
+      }
+    }
+  }
+
+  // Always add a general Book of Mormon search
+  sources.push({
+    id: `bofm-search-${Date.now()}`,
+    type: 'scripture',
+    title: `Search Book of Mormon for "${primaryTerm}"`,
+    url: `https://www.churchofjesuschrist.org/study/scriptures/bofm?lang=eng&query=${encodeURIComponent(primaryTerm)}`,
+  });
+
+  // Add General Conference search
+  sources.push({
+    id: `conf-${Date.now()}`,
+    type: 'conference',
+    title: `General Conference on "${primaryTerm}"`,
+    url: `https://www.churchofjesuschrist.org/study/general-conference?lang=eng#keyword=${encodeURIComponent(primaryTerm)}`,
+  });
+
+  // Add Gospel Library search
+  sources.push({
+    id: `search-${Date.now()}`,
+    type: 'scripture',
+    title: 'Search All Gospel Resources',
+    url: `https://www.churchofjesuschrist.org/search?lang=eng&query=${encodeURIComponent(primaryTerm)}&facet=scriptures`,
+  });
+
+  return sources;
+}
+
+/**
  * Popular Book of Mormon topics for suggestions
  */
 export const popularTopics = {

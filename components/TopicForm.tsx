@@ -1,18 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { storage } from '@/lib/storage';
+import { topicsApi } from '@/lib/api';
 import { Topic, Category } from '@/lib/types';
-import { generateSuggestedSources } from '@/lib/contentService';
+import { generateSuggestedSourcesAsync } from '@/lib/contentService';
+import LoadingAnimation from './LoadingAnimation';
 import styles from './TopicForm.module.css';
 
 interface TopicFormProps {
   category: Category;
+  roleId?: string;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-export default function TopicForm({ category, onSuccess, onCancel }: TopicFormProps) {
+export default function TopicForm({ category, roleId, onSuccess, onCancel }: TopicFormProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,25 +29,37 @@ export default function TopicForm({ category, onSuccess, onCancel }: TopicFormPr
 
     setIsSubmitting(true);
 
-    // Generate suggested sources based on topic
-    const suggestedSources = generateSuggestedSources(title.trim(), description.trim());
+    try {
+      // Generate suggested sources based on topic (async with loading animation)
+      const suggestedSources = await generateSuggestedSourcesAsync(title.trim(), description.trim());
 
-    const newTopic: Topic = {
-      id: Date.now().toString(),
-      title: title.trim(),
-      description: description.trim(),
-      category,
-      createdAt: Date.now(),
-      completed: false,
-      totalTimeSpent: 0,
-      sources: suggestedSources,
-    };
+      const newTopic = {
+        title: title.trim(),
+        description: description.trim(),
+        category,
+        roleId, // Link to the role if provided
+        sources: suggestedSources,
+      };
 
-    storage.saveTopic(newTopic);
+      await topicsApi.create(newTopic);
 
-    setIsSubmitting(false);
-    onSuccess();
+      setIsSubmitting(false);
+      onSuccess();
+    } catch (error) {
+      console.error('Error creating topic:', error);
+      setIsSubmitting(false);
+      alert('There was an error creating your topic. Please try again.');
+    }
   };
+
+  // Show loading animation while generating sources
+  if (isSubmitting) {
+    return (
+      <div className={styles.form}>
+        <LoadingAnimation message="Gathering sacred sources" />
+      </div>
+    );
+  }
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
@@ -99,7 +113,7 @@ export default function TopicForm({ category, onSuccess, onCancel }: TopicFormPr
           className={styles.submitButton}
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Creating...' : 'Create Topic'}
+          Create Topic
         </button>
       </div>
     </form>
