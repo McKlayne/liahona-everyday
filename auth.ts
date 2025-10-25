@@ -1,16 +1,19 @@
 import NextAuth from 'next-auth';
+import Google from 'next-auth/providers/google';
+import Apple from 'next-auth/providers/apple';
 import Credentials from 'next-auth/providers/credentials';
-import { authConfig } from './auth.config';
 import { verifyCredentials } from './lib/users';
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
-  ...authConfig,
-  debug: process.env.NODE_ENV === 'development',
-  session: {
-    strategy: 'jwt',
-  },
   providers: [
-    ...authConfig.providers,
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
+    Apple({
+      clientId: process.env.APPLE_CLIENT_ID,
+      clientSecret: process.env.APPLE_CLIENT_SECRET,
+    }),
     Credentials({
       name: 'credentials',
       credentials: {
@@ -31,7 +34,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           return null;
         }
 
-        // Return user object that will be stored in JWT
         return {
           id: user.id,
           name: user.name,
@@ -41,37 +43,51 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       },
     }),
   ],
+  pages: {
+    signIn: '/login',
+  },
+  session: {
+    strategy: 'jwt',
+  },
   callbacks: {
-    async jwt({ token, user, account, profile }) {
-      // On initial sign in, user object is available
-      if (user) {
-        // For credentials provider, user.id is set by authorize()
-        // For OAuth, token.sub is automatically set by NextAuth
-        token.id = (user.id || token.sub || user.email) as string;
-
-        // Capture profile picture
-        if (account?.provider === 'google' && profile) {
-          token.picture = (profile as any).picture;
-        } else if (user.image) {
-          token.picture = user.image;
-        }
+    async jwt({ token, user, account }) {
+      // First time JWT callback is run, user object is available
+      if (account && user) {
+        token.id = (user.id || token.sub) as string;
       }
-
       return token;
     },
     async session({ session, token }) {
-      // Add custom fields to session
-      if (session.user) {
-        // Use token.id if available, fallback to token.sub, then email
-        session.user.id = (token.id || token.sub || token.email) as string;
+      // Add user ID to session
+      if (session.user && token.sub) {
+        session.user.id = (token.id || token.sub) as string;
+      }
+      return session;
+    },
+    authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user;
+      const isOnLoginPage = nextUrl.pathname === '/login';
+      const isOnWelcomePage = nextUrl.pathname === '/welcome';
+      const isOnPublicPage = isOnLoginPage || isOnWelcomePage;
+      const isOnAuthRoute = nextUrl.pathname.startsWith('/api/auth');
+      const isOnRegisterRoute = nextUrl.pathname === '/api/register';
 
-        // Add profile picture if available
-        if (token.picture) {
-          session.user.image = token.picture as string;
-        }
+      // Allow access to auth routes and register route
+      if (isOnAuthRoute || isOnRegisterRoute) {
+        return true;
       }
 
-      return session;
+      // Allow access to public pages (welcome and login)
+      if (isOnPublicPage) {
+        return true;
+      }
+
+      // Redirect unauthenticated users to welcome page
+      if (!isLoggedIn) {
+        return Response.redirect(new URL('/welcome', nextUrl));
+      }
+
+      return true;
     },
   },
 });
