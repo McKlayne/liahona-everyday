@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Role } from '@/lib/types';
-import { storage } from '@/lib/storage';
+import { rolesApi } from '@/lib/api';
 import LiahonaIcon from './LiahonaIcon';
 import styles from './OnboardingWizard.module.css';
 
@@ -14,6 +14,7 @@ interface OnboardingWizardProps {
 export default function OnboardingWizard({ userName, onComplete }: OnboardingWizardProps) {
   const [step, setStep] = useState(1);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const availableRoles: Omit<Role, 'id' | 'order'>[] = [
     { label: 'Personal', icon: '👤', slug: 'personal' },
@@ -34,21 +35,28 @@ export default function OnboardingWizard({ userName, onComplete }: OnboardingWiz
     }
   };
 
-  const handleComplete = () => {
-    // Save selected roles
-    const roles: Role[] = availableRoles
-      .filter(role => selectedRoles.includes(role.slug))
-      .map((role, index) => ({
-        ...role,
-        id: Date.now().toString() + index,
-        order: index + 1,
-      }));
+  const handleComplete = async () => {
+    setIsLoading(true);
+    try {
+      // Save selected roles using API
+      const rolesToCreate = availableRoles
+        .filter(role => selectedRoles.includes(role.slug))
+        .map((role, index) => ({
+          ...role,
+          order: index + 1,
+        }));
 
-    if (roles.length > 0) {
-      storage.saveRoles(roles);
+      for (const role of rolesToCreate) {
+        await rolesApi.create(role);
+      }
+
+      onComplete();
+    } catch (error) {
+      console.error('Failed to create roles:', error);
+      alert('Failed to save roles. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-
-    onComplete();
   };
 
   const handleNext = () => {
@@ -164,8 +172,12 @@ export default function OnboardingWizard({ userName, onComplete }: OnboardingWiz
               </p>
             </div>
             <div className={styles.actions}>
-              <button className={styles.primaryButton} onClick={handleComplete}>
-                Start Studying
+              <button
+                className={styles.primaryButton}
+                onClick={handleComplete}
+                disabled={isLoading}
+              >
+                {isLoading ? 'Setting up...' : 'Start Studying'}
               </button>
             </div>
           </div>

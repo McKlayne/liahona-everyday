@@ -1,15 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import MainLayout from '@/components/MainLayout';
+import OnboardingWizard from '@/components/OnboardingWizard';
 import { topicsApi, rolesApi } from '@/lib/api';
 import { Topic, Role } from '@/lib/types';
 import styles from './page.module.css';
 
 export default function Home() {
+  const { data: session } = useSession();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -20,6 +24,11 @@ export default function Home() {
         ]);
         setTopics(topicsData);
         setRoles(rolesData.sort((a, b) => a.order - b.order));
+
+        // Show onboarding if user has no roles (first time user)
+        if (rolesData.length === 0) {
+          setShowOnboarding(true);
+        }
       } catch (error) {
         console.error('Failed to load data:', error);
       } finally {
@@ -59,6 +68,17 @@ export default function Home() {
   const completedTopics = topics.filter(t => t.completed).length;
   const totalTimeSpent = topics.reduce((sum, t) => sum + t.totalTimeSpent, 0);
 
+  const handleOnboardingComplete = async () => {
+    setShowOnboarding(false);
+    // Reload roles after onboarding
+    try {
+      const rolesData = await rolesApi.getAll();
+      setRoles(rolesData.sort((a, b) => a.order - b.order));
+    } catch (error) {
+      console.error('Failed to reload roles:', error);
+    }
+  };
+
   if (loading) {
     return (
       <MainLayout>
@@ -66,6 +86,15 @@ export default function Home() {
           <div style={{ textAlign: 'center', padding: '2rem' }}>Loading...</div>
         </div>
       </MainLayout>
+    );
+  }
+
+  if (showOnboarding && session?.user) {
+    return (
+      <OnboardingWizard
+        userName={session.user.name || 'Friend'}
+        onComplete={handleOnboardingComplete}
+      />
     );
   }
 
