@@ -2,26 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import MainLayout from '@/components/MainLayout';
 import { storage } from '@/lib/storage';
-import { UserSettings, User } from '@/lib/types';
+import { UserSettings } from '@/lib/types';
 import styles from './page.module.css';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const { data: session, status } = useSession();
   const [settings, setSettings] = useState<UserSettings>(storage.getSettings());
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    const currentUser = storage.getUser();
-    if (!currentUser) {
-      router.push('/');
-      return;
+    if (status === 'unauthenticated') {
+      router.push('/login');
     }
-    setUser(currentUser);
-    setSettings(storage.getSettings());
-  }, [router]);
+  }, [status, router]);
 
   const applyTheme = (newSettings: UserSettings) => {
     // Apply theme immediately
@@ -55,14 +52,21 @@ export default function SettingsPage() {
     }, 500);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (confirm('Are you sure you want to log out?')) {
-      storage.logout();
-      router.push('/');
+      await signOut({ callbackUrl: '/login' });
     }
   };
 
-  if (!user) {
+  if (status === 'loading') {
+    return (
+      <MainLayout>
+        <div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>
+      </MainLayout>
+    );
+  }
+
+  if (!session?.user) {
     return null;
   }
 
@@ -77,13 +81,25 @@ export default function SettingsPage() {
           {/* User Profile Section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Profile</h2>
+            {session.user.image && (
+              <div className={styles.settingGroup}>
+                <label className={styles.label}>Profile Picture</label>
+                <div className={styles.profilePictureContainer}>
+                  <img
+                    src={session.user.image}
+                    alt={session.user.name || 'User'}
+                    className={styles.profilePicture}
+                  />
+                </div>
+              </div>
+            )}
             <div className={styles.settingGroup}>
               <label className={styles.label}>Name</label>
-              <div className={styles.value}>{user.name}</div>
+              <div className={styles.value}>{session.user.name}</div>
             </div>
             <div className={styles.settingGroup}>
               <label className={styles.label}>Email</label>
-              <div className={styles.value}>{user.email}</div>
+              <div className={styles.value}>{session.user.email}</div>
             </div>
           </section>
 
