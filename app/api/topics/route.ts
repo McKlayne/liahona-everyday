@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
 import { storage } from '@/lib/storage-adapter';
 import { Topic } from '@/lib/types';
 
 // GET /api/topics - Get all topics
 export async function GET(request: NextRequest) {
   try {
-    const topics = await storage.getTopics();
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const topics = await storage.getTopics(session.user.id);
     return NextResponse.json({ topics });
   } catch (error) {
     console.error('GET /api/topics error:', error);
@@ -19,6 +28,14 @@ export async function GET(request: NextRequest) {
 // POST /api/topics - Create a new topic
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { title, description, category, roleId, sources } = body;
 
@@ -41,7 +58,13 @@ export async function POST(request: NextRequest) {
       sources: sources || [],
     };
 
-    await storage.saveTopic(newTopic);
+    await storage.saveTopic(session.user.id, newTopic);
+
+    // Initialize default roles for new users (on first topic creation)
+    const roles = await storage.getRoles(session.user.id);
+    if (roles.length === 0) {
+      await storage.initializeUserRoles(session.user.id);
+    }
 
     return NextResponse.json({ topic: newTopic }, { status: 201 });
   } catch (error) {

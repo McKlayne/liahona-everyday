@@ -8,7 +8,7 @@ import { Topic, Role, StudySession } from '../types';
 
 export const dbStorage = {
   // Topics
-  getTopics: async (): Promise<Topic[]> => {
+  getTopics: async (userId: string): Promise<Topic[]> => {
     const { rows } = await sql`
       SELECT
         id,
@@ -21,12 +21,13 @@ export const dbStorage = {
         total_time_spent as "totalTimeSpent",
         sources
       FROM topics
+      WHERE user_id = ${userId}
       ORDER BY created_at DESC
     `;
     return rows as Topic[];
   },
 
-  getTopic: async (id: string): Promise<Topic | null> => {
+  getTopic: async (userId: string, id: string): Promise<Topic | null> => {
     const { rows } = await sql`
       SELECT
         id,
@@ -39,18 +40,18 @@ export const dbStorage = {
         total_time_spent as "totalTimeSpent",
         sources
       FROM topics
-      WHERE id = ${id}
+      WHERE id = ${id} AND user_id = ${userId}
     `;
     return rows[0] as Topic || null;
   },
 
-  saveTopic: async (topic: Topic): Promise<void> => {
+  saveTopic: async (userId: string, topic: Topic): Promise<void> => {
     const { id, title, description, category, roleId, createdAt, completed, totalTimeSpent, sources } = topic;
 
     // Upsert (insert or update)
     await sql`
-      INSERT INTO topics (id, title, description, category, role_id, created_at, completed, total_time_spent, sources)
-      VALUES (${id}, ${title}, ${description}, ${category}, ${roleId || null}, ${createdAt}, ${completed}, ${totalTimeSpent}, ${JSON.stringify(sources)}::jsonb)
+      INSERT INTO topics (id, user_id, title, description, category, role_id, created_at, completed, total_time_spent, sources)
+      VALUES (${id}, ${userId}, ${title}, ${description}, ${category}, ${roleId || null}, ${createdAt}, ${completed}, ${totalTimeSpent}, ${JSON.stringify(sources)}::jsonb)
       ON CONFLICT (id)
       DO UPDATE SET
         title = EXCLUDED.title,
@@ -64,8 +65,8 @@ export const dbStorage = {
     `;
   },
 
-  deleteTopic: async (topicId: string): Promise<void> => {
-    await sql`DELETE FROM topics WHERE id = ${topicId}`;
+  deleteTopic: async (userId: string, topicId: string): Promise<void> => {
+    await sql`DELETE FROM topics WHERE id = ${topicId} AND user_id = ${userId}`;
   },
 
   // Study Sessions
@@ -91,21 +92,22 @@ export const dbStorage = {
   },
 
   // Roles
-  getRoles: async (): Promise<Role[]> => {
+  getRoles: async (userId: string): Promise<Role[]> => {
     const { rows } = await sql`
       SELECT id, label, icon, slug, "order"
       FROM roles
+      WHERE user_id = ${userId}
       ORDER BY "order" ASC
     `;
     return rows as Role[];
   },
 
-  saveRole: async (role: Role): Promise<void> => {
+  saveRole: async (userId: string, role: Role): Promise<void> => {
     const { id, label, icon, slug, order } = role;
 
     await sql`
-      INSERT INTO roles (id, label, icon, slug, "order")
-      VALUES (${id}, ${label}, ${icon}, ${slug}, ${order})
+      INSERT INTO roles (id, user_id, label, icon, slug, "order")
+      VALUES (${id}, ${userId}, ${label}, ${icon}, ${slug}, ${order})
       ON CONFLICT (id)
       DO UPDATE SET
         label = EXCLUDED.label,
@@ -115,73 +117,32 @@ export const dbStorage = {
     `;
   },
 
-  deleteRole: async (roleId: string): Promise<void> => {
-    await sql`DELETE FROM roles WHERE id = ${roleId}`;
+  deleteRole: async (userId: string, roleId: string): Promise<void> => {
+    await sql`DELETE FROM roles WHERE id = ${roleId} AND user_id = ${userId}`;
   },
 
-  // Initialize database (create tables)
+  // Initialize database (create tables) - now uses schema from lib/db/schema.sql
   initializeDatabase: async (): Promise<void> => {
-    // Create roles table
-    await sql`
-      CREATE TABLE IF NOT EXISTS roles (
-        id TEXT PRIMARY KEY,
-        label TEXT NOT NULL,
-        icon TEXT NOT NULL,
-        slug TEXT NOT NULL UNIQUE,
-        "order" INTEGER NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
+    // Note: Tables should be created using schema.sql
+    // This method is kept for backward compatibility
+    // The actual schema creation happens via /api/init or Vercel Postgres dashboard
+    console.log('Database initialization is now handled via schema.sql');
+  },
 
-    // Create topics table
-    await sql`
-      CREATE TABLE IF NOT EXISTS topics (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        description TEXT NOT NULL,
-        category TEXT NOT NULL,
-        role_id TEXT,
-        created_at BIGINT NOT NULL,
-        completed BOOLEAN DEFAULT FALSE,
-        total_time_spent INTEGER DEFAULT 0,
-        sources JSONB DEFAULT '[]'::jsonb,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL
-      )
-    `;
-
-    // Create study sessions table
-    await sql`
-      CREATE TABLE IF NOT EXISTS study_sessions (
-        id SERIAL PRIMARY KEY,
-        topic_id TEXT NOT NULL,
-        start_time BIGINT NOT NULL,
-        end_time BIGINT NOT NULL,
-        duration INTEGER NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE CASCADE
-      )
-    `;
-
-    // Create indexes
-    await sql`CREATE INDEX IF NOT EXISTS idx_topics_category ON topics(category)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_topics_role_id ON topics(role_id)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_topics_completed ON topics(completed)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_sessions_topic_id ON study_sessions(topic_id)`;
-
-    // Insert default roles
+  // Initialize default roles for a new user
+  initializeUserRoles: async (userId: string): Promise<void> => {
     const defaultRoles: Role[] = [
-      { id: '1', label: 'Personal', icon: '👤', slug: 'personal', order: 1 },
-      { id: '2', label: 'Marriage', icon: '💑', slug: 'marriage', order: 2 },
-      { id: '3', label: 'Parenting', icon: '👨‍👩‍👧‍👦', slug: 'parenting', order: 3 },
-      { id: '4', label: 'Calling', icon: '📞', slug: 'calling', order: 4 },
-      { id: '5', label: 'Work', icon: '💼', slug: 'work', order: 5 },
+      { id: `${userId}-1`, label: 'Personal', icon: '👤', slug: 'personal', order: 1 },
+      { id: `${userId}-2`, label: 'Marriage', icon: '💑', slug: 'marriage', order: 2 },
+      { id: `${userId}-3`, label: 'Parenting', icon: '👨‍👩‍👧‍👦', slug: 'parenting', order: 3 },
+      { id: `${userId}-4`, label: 'Calling', icon: '📞', slug: 'calling', order: 4 },
+      { id: `${userId}-5`, label: 'Work', icon: '💼', slug: 'work', order: 5 },
     ];
 
     for (const role of defaultRoles) {
       await sql`
-        INSERT INTO roles (id, label, icon, slug, "order")
-        VALUES (${role.id}, ${role.label}, ${role.icon}, ${role.slug}, ${role.order})
+        INSERT INTO roles (id, user_id, label, icon, slug, "order")
+        VALUES (${role.id}, ${userId}, ${role.label}, ${role.icon}, ${role.slug}, ${role.order})
         ON CONFLICT (id) DO NOTHING
       `;
     }

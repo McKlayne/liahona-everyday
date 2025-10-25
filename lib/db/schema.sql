@@ -1,18 +1,21 @@
 -- Liahona Everyday Database Schema
 
--- Roles table
+-- Roles table (now user-specific)
 CREATE TABLE IF NOT EXISTS roles (
   id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
   label TEXT NOT NULL,
   icon TEXT NOT NULL,
-  slug TEXT NOT NULL UNIQUE,
+  slug TEXT NOT NULL,
   "order" INTEGER NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(user_id, slug)
 );
 
--- Topics table
+-- Topics table (now user-specific)
 CREATE TABLE IF NOT EXISTS topics (
   id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
   title TEXT NOT NULL,
   description TEXT NOT NULL,
   category TEXT NOT NULL,
@@ -37,17 +40,12 @@ CREATE TABLE IF NOT EXISTS study_sessions (
 );
 
 -- Create indexes for better query performance
+CREATE INDEX IF NOT EXISTS idx_topics_user_id ON topics(user_id);
 CREATE INDEX IF NOT EXISTS idx_topics_category ON topics(category);
 CREATE INDEX IF NOT EXISTS idx_topics_role_id ON topics(role_id);
 CREATE INDEX IF NOT EXISTS idx_topics_completed ON topics(completed);
+CREATE INDEX IF NOT EXISTS idx_roles_user_id ON roles(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_topic_id ON study_sessions(topic_id);
 
--- Insert default roles
-INSERT INTO roles (id, label, icon, slug, "order")
-VALUES
-  ('1', 'Personal', '👤', 'personal', 1),
-  ('2', 'Marriage', '💑', 'marriage', 2),
-  ('3', 'Parenting', '👨‍👩‍👧‍👦', 'parenting', 3),
-  ('4', 'Calling', '📞', 'calling', 4),
-  ('5', 'Work', '💼', 'work', 5)
-ON CONFLICT (id) DO NOTHING;
+-- Default roles will be created per-user on first login
+-- (removed global default roles)

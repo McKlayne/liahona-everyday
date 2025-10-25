@@ -11,34 +11,34 @@ const isProduction = process.env.POSTGRES_URL !== undefined;
 
 export const storage = {
   // Topics
-  getTopics: async (): Promise<Topic[]> => {
+  getTopics: async (userId: string): Promise<Topic[]> => {
     if (isProduction) {
-      return await dbStorage.getTopics();
+      return await dbStorage.getTopics(userId);
     }
-    return serverStorage.getTopics();
+    return serverStorage.getTopics(userId);
   },
 
-  getTopic: async (id: string): Promise<Topic | null> => {
+  getTopic: async (userId: string, id: string): Promise<Topic | null> => {
     if (isProduction) {
-      return await dbStorage.getTopic(id);
+      return await dbStorage.getTopic(userId, id);
     }
-    const topics = serverStorage.getTopics();
+    const topics = serverStorage.getTopics(userId);
     return topics.find(t => t.id === id) || null;
   },
 
-  saveTopic: async (topic: Topic): Promise<void> => {
+  saveTopic: async (userId: string, topic: Topic): Promise<void> => {
     if (isProduction) {
-      await dbStorage.saveTopic(topic);
+      await dbStorage.saveTopic(userId, topic);
     } else {
-      serverStorage.saveTopic(topic);
+      serverStorage.saveTopic(userId, topic);
     }
   },
 
-  deleteTopic: async (topicId: string): Promise<void> => {
+  deleteTopic: async (userId: string, topicId: string): Promise<void> => {
     if (isProduction) {
-      await dbStorage.deleteTopic(topicId);
+      await dbStorage.deleteTopic(userId, topicId);
     } else {
-      serverStorage.deleteTopic(topicId);
+      serverStorage.deleteTopic(userId, topicId);
     }
   },
 
@@ -59,26 +59,35 @@ export const storage = {
   },
 
   // Roles
-  getRoles: async (): Promise<Role[]> => {
+  getRoles: async (userId: string): Promise<Role[]> => {
     if (isProduction) {
-      return await dbStorage.getRoles();
+      return await dbStorage.getRoles(userId);
     }
-    return serverStorage.getRoles();
+    return serverStorage.getRoles(userId);
   },
 
-  saveRole: async (role: Role): Promise<void> => {
+  saveRole: async (userId: string, role: Role): Promise<void> => {
     if (isProduction) {
-      await dbStorage.saveRole(role);
+      await dbStorage.saveRole(userId, role);
     } else {
-      serverStorage.saveRole(role);
+      serverStorage.saveRole(userId, role);
     }
   },
 
-  deleteRole: async (roleId: string): Promise<void> => {
+  deleteRole: async (userId: string, roleId: string): Promise<void> => {
     if (isProduction) {
-      await dbStorage.deleteRole(roleId);
+      await dbStorage.deleteRole(userId, roleId);
     } else {
-      serverStorage.deleteRole(roleId);
+      serverStorage.deleteRole(userId, roleId);
+    }
+  },
+
+  // Initialize default roles for a new user
+  initializeUserRoles: async (userId: string): Promise<void> => {
+    if (isProduction) {
+      await dbStorage.initializeUserRoles(userId);
+    } else {
+      serverStorage.initializeUserRoles(userId);
     }
   },
 

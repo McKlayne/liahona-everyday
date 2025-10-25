@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
 import { storage } from '@/lib/storage-adapter';
 
 // GET /api/topics/[id] - Get a specific topic
@@ -7,7 +8,15 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const topic = await storage.getTopic(params.id);
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const topic = await storage.getTopic(session.user.id, params.id);
 
     if (!topic) {
       return NextResponse.json(
@@ -32,8 +41,16 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
-    const topic = await storage.getTopic(params.id);
+    const topic = await storage.getTopic(session.user.id, params.id);
 
     if (!topic) {
       return NextResponse.json(
@@ -48,7 +65,7 @@ export async function PUT(
       id: params.id, // Ensure ID doesn't change
     };
 
-    await storage.saveTopic(updatedTopic);
+    await storage.saveTopic(session.user.id, updatedTopic);
 
     return NextResponse.json({ topic: updatedTopic });
   } catch (error) {
@@ -66,7 +83,15 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await storage.deleteTopic(params.id);
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    await storage.deleteTopic(session.user.id, params.id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('DELETE /api/topics/[id] error:', error);

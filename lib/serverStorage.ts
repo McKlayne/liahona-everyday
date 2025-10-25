@@ -60,12 +60,14 @@ function writeJSON<T>(filePath: string, data: T): void {
 
 export const serverStorage = {
   // Topics
-  getTopics: (): Topic[] => {
+  // Note: In dev mode (file storage), userId is accepted but not used for filtering
+  // All users share the same file storage in development
+  getTopics: (userId: string): Topic[] => {
     return readJSON<Topic[]>(TOPICS_FILE, []);
   },
 
-  saveTopic: (topic: Topic): void => {
-    const topics = serverStorage.getTopics();
+  saveTopic: (userId: string, topic: Topic): void => {
+    const topics = serverStorage.getTopics(userId);
     const existingIndex = topics.findIndex(t => t.id === topic.id);
 
     if (existingIndex >= 0) {
@@ -77,8 +79,8 @@ export const serverStorage = {
     writeJSON(TOPICS_FILE, topics);
   },
 
-  deleteTopic: (topicId: string): void => {
-    const topics = serverStorage.getTopics().filter(t => t.id !== topicId);
+  deleteTopic: (userId: string, topicId: string): void => {
+    const topics = serverStorage.getTopics(userId).filter(t => t.id !== topicId);
     writeJSON(TOPICS_FILE, topics);
   },
 
@@ -94,7 +96,7 @@ export const serverStorage = {
   },
 
   // Roles
-  getRoles: (): Role[] => {
+  getRoles: (userId: string): Role[] => {
     const roles = readJSON<Role[]>(ROLES_FILE, []);
     if (roles.length === 0) {
       writeJSON(ROLES_FILE, DEFAULT_ROLES);
@@ -107,8 +109,8 @@ export const serverStorage = {
     writeJSON(ROLES_FILE, roles);
   },
 
-  saveRole: (role: Role): void => {
-    const roles = serverStorage.getRoles();
+  saveRole: (userId: string, role: Role): void => {
+    const roles = serverStorage.getRoles(userId);
     const existingIndex = roles.findIndex(r => r.id === role.id);
 
     if (existingIndex >= 0) {
@@ -120,9 +122,17 @@ export const serverStorage = {
     writeJSON(ROLES_FILE, roles);
   },
 
-  deleteRole: (roleId: string): void => {
-    const roles = serverStorage.getRoles().filter(r => r.id !== roleId);
+  deleteRole: (userId: string, roleId: string): void => {
+    const roles = serverStorage.getRoles(userId).filter(r => r.id !== roleId);
     writeJSON(ROLES_FILE, roles);
+  },
+
+  // Initialize default roles for a new user (dev mode)
+  initializeUserRoles: (userId: string): void => {
+    const roles = serverStorage.getRoles(userId);
+    if (roles.length === 0) {
+      writeJSON(ROLES_FILE, DEFAULT_ROLES);
+    }
   },
 
   // User Authentication

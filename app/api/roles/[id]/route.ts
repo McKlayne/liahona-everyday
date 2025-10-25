@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
 import { storage } from '@/lib/storage-adapter';
 
 // DELETE /api/roles/[id] - Delete a role
@@ -7,7 +8,15 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await storage.deleteRole(params.id);
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    await storage.deleteRole(session.user.id, params.id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('DELETE /api/roles/[id] error:', error);
@@ -24,8 +33,16 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
-    const roles = await storage.getRoles();
+    const roles = await storage.getRoles(session.user.id);
     const role = roles.find(r => r.id === params.id);
 
     if (!role) {
@@ -41,7 +58,7 @@ export async function PUT(
       id: params.id, // Ensure ID doesn't change
     };
 
-    await storage.saveRole(updatedRole);
+    await storage.saveRole(session.user.id, updatedRole);
 
     return NextResponse.json({ role: updatedRole });
   } catch (error) {

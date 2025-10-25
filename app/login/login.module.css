@@ -1,0 +1,138 @@
+.loginContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--base03) 0%, var(--base02) 100%);
+  padding: 2rem;
+}
+
+.loginCard {
+  background: var(--base02);
+  border-radius: 16px;
+  padding: 3rem;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--base01);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.logoIcon {
+  color: var(--blue);
+}
+
+.logoText {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--base1);
+  margin: 0;
+}
+
+.subtitle {
+  color: var(--base0);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.content {
+  margin-bottom: 2.5rem;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--base1);
+  margin: 0 0 1rem 0;
+  text-align: center;
+}
+
+.description {
+  color: var(--base0);
+  line-height: 1.6;
+  margin: 0 0 2rem 0;
+  text-align: center;
+}
+
+.googleButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.5rem;
+  background: white;
+  color: #1f1f1f;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.googleButton:hover {
+  background: #f8f8f8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.googleButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+}
+
+.quote {
+  padding-top: 2rem;
+  border-top: 1px solid var(--base01);
+  text-align: center;
+}
+
+.quote p {
+  color: var(--base0);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  font-style: italic;
+  margin: 0 0 0.5rem 0;
+}
+
+.quote footer {
+  color: var(--base01);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .loginContainer {
+    padding: 1rem;
+  }
+
+  .loginCard {
+    padding: 2rem 1.5rem;
+  }
+
+  .logoText {
+    font-size: 1.75rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+}

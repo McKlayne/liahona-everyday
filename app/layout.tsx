@@ -1,6 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import AuthGuard from '@/components/AuthGuard'
+import { SessionProvider } from 'next-auth/react'
 import ThemeProvider from '@/components/ThemeProvider'
 
 export const metadata: Metadata = {
@@ -23,9 +23,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ThemeProvider>
-          <AuthGuard>{children}</AuthGuard>
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   )
