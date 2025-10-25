@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { serverStorage } from '@/lib/serverStorage';
+import { storage } from '@/lib/storage-adapter';
 import { Topic } from '@/lib/types';
 
 // GET /api/topics - Get all topics
 export async function GET(request: NextRequest) {
   try {
-    const topics = serverStorage.getTopics();
+    const topics = await storage.getTopics();
     return NextResponse.json({ topics });
   } catch (error) {
     console.error('GET /api/topics error:', error);
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       sources: sources || [],
     };
 
-    serverStorage.saveTopic(newTopic);
+    await storage.saveTopic(newTopic);
 
     return NextResponse.json({ topic: newTopic }, { status: 201 });
   } catch (error) {

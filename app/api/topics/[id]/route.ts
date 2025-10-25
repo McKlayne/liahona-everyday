@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { serverStorage } from '@/lib/serverStorage';
+import { storage } from '@/lib/storage-adapter';
 
 // GET /api/topics/[id] - Get a specific topic
 export async function GET(
@@ -7,8 +7,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const topics = serverStorage.getTopics();
-    const topic = topics.find(t => t.id === params.id);
+    const topic = await storage.getTopic(params.id);
 
     if (!topic) {
       return NextResponse.json(
@@ -34,10 +33,9 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const topics = serverStorage.getTopics();
-    const topicIndex = topics.findIndex(t => t.id === params.id);
+    const topic = await storage.getTopic(params.id);
 
-    if (topicIndex === -1) {
+    if (!topic) {
       return NextResponse.json(
         { error: 'Topic not found' },
         { status: 404 }
@@ -45,12 +43,12 @@ export async function PUT(
     }
 
     const updatedTopic = {
-      ...topics[topicIndex],
+      ...topic,
       ...body,
       id: params.id, // Ensure ID doesn't change
     };
 
-    serverStorage.saveTopic(updatedTopic);
+    await storage.saveTopic(updatedTopic);
 
     return NextResponse.json({ topic: updatedTopic });
   } catch (error) {
@@ -68,7 +66,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    serverStorage.deleteTopic(params.id);
+    await storage.deleteTopic(params.id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('DELETE /api/topics/[id] error:', error);

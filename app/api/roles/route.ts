@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { serverStorage } from '@/lib/serverStorage';
+import { storage } from '@/lib/storage-adapter';
 import { Role } from '@/lib/types';
 
 // GET /api/roles - Get all roles
 export async function GET(request: NextRequest) {
   try {
-    const roles = serverStorage.getRoles();
+    const roles = await storage.getRoles();
     return NextResponse.json({ roles });
   } catch (error) {
     console.error('GET /api/roles error:', error);
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       order: Date.now(),
     };
 
-    serverStorage.saveRole(newRole);
+    await storage.saveRole(newRole);
 
     return NextResponse.json({ role: newRole }, { status: 201 });
   } catch (error) {

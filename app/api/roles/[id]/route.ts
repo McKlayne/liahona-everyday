@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { serverStorage } from '@/lib/serverStorage';
+import { storage } from '@/lib/storage-adapter';
 
 // DELETE /api/roles/[id] - Delete a role
 export async function DELETE(
@@ -7,7 +7,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    serverStorage.deleteRole(params.id);
+    await storage.deleteRole(params.id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('DELETE /api/roles/[id] error:', error);
@@ -25,10 +25,10 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const roles = serverStorage.getRoles();
-    const roleIndex = roles.findIndex(r => r.id === params.id);
+    const roles = await storage.getRoles();
+    const role = roles.find(r => r.id === params.id);
 
-    if (roleIndex === -1) {
+    if (!role) {
       return NextResponse.json(
         { error: 'Role not found' },
         { status: 404 }
@@ -36,12 +36,12 @@ export async function PUT(
     }
 
     const updatedRole = {
-      ...roles[roleIndex],
+      ...role,
       ...body,
       id: params.id, // Ensure ID doesn't change
     };
 
-    serverStorage.saveRole(updatedRole);
+    await storage.saveRole(updatedRole);
 
     return NextResponse.json({ role: updatedRole });
   } catch (error) {
