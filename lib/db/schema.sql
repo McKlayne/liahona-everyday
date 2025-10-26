@@ -1,5 +1,15 @@
 -- Liahona Everyday Database Schema
 
+-- Users table (for email/password authentication)
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  image TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Roles table (now user-specific)
 CREATE TABLE IF NOT EXISTS roles (
   id TEXT PRIMARY KEY,
@@ -40,6 +50,7 @@ CREATE TABLE IF NOT EXISTS study_sessions (
 );
 
 -- Create indexes for better query performance
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_topics_user_id ON topics(user_id);
 CREATE INDEX IF NOT EXISTS idx_topics_category ON topics(category);
 CREATE INDEX IF NOT EXISTS idx_topics_role_id ON topics(role_id);
