@@ -126,20 +126,32 @@ export const dbStorage = {
   initializeDatabase: async (): Promise<void> => {
     console.log('Initializing database with schema...');
 
-    // Split by semicolons and execute each statement
-    const statements = DATABASE_SCHEMA
+    // Remove comment lines and split by semicolons
+    const cleanedSchema = DATABASE_SCHEMA
+      .split('\n')
+      .filter(line => !line.trim().startsWith('--'))
+      .join('\n');
+
+    const statements = cleanedSchema
       .split(';')
       .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
+      .filter(s => s.length > 0);
 
-    for (const statement of statements) {
+    console.log(`Executing ${statements.length} SQL statements...`);
+
+    for (let i = 0; i < statements.length; i++) {
+      const statement = statements[i];
       try {
         await sql.query(statement);
-        console.log('Executed:', statement.substring(0, 50) + '...');
+        const preview = statement.substring(0, 60).replace(/\s+/g, ' ');
+        console.log(`[${i + 1}/${statements.length}] Executed: ${preview}...`);
       } catch (error: any) {
         // Ignore "already exists" errors
-        if (!error.message?.includes('already exists')) {
-          console.error('Schema execution error:', error);
+        if (error.message?.includes('already exists')) {
+          console.log(`[${i + 1}/${statements.length}] Skipped (already exists)`);
+        } else {
+          console.error(`[${i + 1}/${statements.length}] Error executing statement:`, statement);
+          console.error('Error:', error.message);
           throw error;
         }
       }
