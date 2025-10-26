@@ -1,5 +1,6 @@
 import { sql } from '@vercel/postgres';
 import { Topic, Role, StudySession } from '../types';
+import { DATABASE_SCHEMA } from './schema';
 
 /**
  * Database storage layer using Vercel Postgres
@@ -121,19 +122,12 @@ export const dbStorage = {
     await sql`DELETE FROM roles WHERE id = ${roleId} AND user_id = ${userId}`;
   },
 
-  // Initialize database (create tables) - now uses schema from lib/db/schema.sql
+  // Initialize database (create tables) - now uses schema from lib/db/schema.ts
   initializeDatabase: async (): Promise<void> => {
-    console.log('Initializing database with schema.sql...');
-
-    // Read and execute schema.sql
-    const fs = await import('fs/promises');
-    const path = await import('path');
-
-    const schemaPath = path.join(process.cwd(), 'lib/db/schema.sql');
-    const schema = await fs.readFile(schemaPath, 'utf-8');
+    console.log('Initializing database with schema...');
 
     // Split by semicolons and execute each statement
-    const statements = schema
+    const statements = DATABASE_SCHEMA
       .split(';')
       .map(s => s.trim())
       .filter(s => s.length > 0 && !s.startsWith('--'));
