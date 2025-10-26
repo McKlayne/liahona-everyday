@@ -1,5 +1,7 @@
--- Liahona Everyday Database Schema
+// Database schema for Liahona Everyday
+// This is a TypeScript file so it gets included in the Vercel build
 
+export const DATABASE_SCHEMA = `
 -- Users table (for email/password authentication)
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
@@ -17,7 +19,7 @@ CREATE TABLE IF NOT EXISTS roles (
   label TEXT NOT NULL,
   icon TEXT NOT NULL,
   slug TEXT NOT NULL,
-  "order" INTEGER NOT NULL,
+  "order" BIGINT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(user_id, slug)
 );
@@ -57,6 +59,4 @@ CREATE INDEX IF NOT EXISTS idx_topics_role_id ON topics(role_id);
 CREATE INDEX IF NOT EXISTS idx_topics_completed ON topics(completed);
 CREATE INDEX IF NOT EXISTS idx_roles_user_id ON roles(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_topic_id ON study_sessions(topic_id);
-
--- Default roles will be created per-user on first login
--- (removed global default roles)
+`;

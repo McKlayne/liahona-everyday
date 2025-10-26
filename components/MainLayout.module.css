@@ -9,4 +9,14 @@
   flex: 1;
   overflow-y: auto;
   padding: 2rem;
+  transition: margin-left 0.3s ease;
+}
+
+/* Mobile - full width since sidebar slides off screen */
+@media (max-width: 767px) {
+  .main {
+    margin-left: 0;
+    width: 100%;
+    padding-top: calc(2rem + 60px); /* Account for mobile header */
+  }
 }
