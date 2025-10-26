@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS roles (
   label TEXT NOT NULL,
   icon TEXT NOT NULL,
   slug TEXT NOT NULL,
-  "order" INTEGER NOT NULL,
+  "order" BIGINT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(user_id, slug)
 );
