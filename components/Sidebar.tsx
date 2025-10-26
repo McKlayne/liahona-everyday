@@ -91,13 +91,6 @@ export default function Sidebar() {
 
         <div className={styles.sectionHeader}>
           <span className={styles.sectionTitle}>Roles</span>
-          <button
-            className={styles.addRoleButton}
-            onClick={handleAddRole}
-            title="Add new role"
-          >
-            +
-          </button>
         </div>
 
         {roles.map((role) => (
@@ -120,6 +113,15 @@ export default function Sidebar() {
             </button>
           </div>
         ))}
+
+        <button
+          className={styles.addRoleButton}
+          onClick={handleAddRole}
+          title="Add new role"
+        >
+          <span className={styles.icon}>+</span>
+          <span>Add Role</span>
+        </button>
       </nav>
 
       {showRoleManager && (
