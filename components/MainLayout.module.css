@@ -17,5 +17,6 @@
   .main {
     margin-left: 0;
     width: 100%;
+    padding-top: calc(2rem + 60px); /* Account for mobile header */
   }
 }
