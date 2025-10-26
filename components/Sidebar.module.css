@@ -8,6 +8,25 @@
   position: fixed;
   left: 0;
   top: 0;
+  transition: width 0.3s ease, transform 0.3s ease;
+  z-index: 100;
+}
+
+/* Collapsed state */
+.sidebar.collapsed {
+  width: 70px;
+}
+
+/* Mobile styles */
+@media (max-width: 767px) {
+  .sidebar {
+    transform: translateX(0);
+    z-index: 200;
+  }
+
+  .sidebar.collapsed {
+    transform: translateX(-100%);
+  }
 }
 
 .header {
@@ -259,4 +278,65 @@
   background-color: var(--base03);
   color: var(--cyan);
   border-left-color: var(--cyan);
+}
+
+/* Mobile overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 150;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Hamburger button */
+.hamburger {
+  position: absolute;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--cyan);
+  border: none;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.hamburger:hover {
+  background: var(--blue);
+  transform: translateX(-50%) scale(1.1);
+}
+
+.hamburger span {
+  width: 20px;
+  height: 2px;
+  background: var(--base03);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Collapsed header styling */
+.sidebar.collapsed .header {
+  padding: 1.5rem 0.5rem;
 }
