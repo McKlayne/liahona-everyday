@@ -94,13 +94,30 @@ export default function Sidebar() {
 
   return (
     <>
+      {/* Mobile header - always visible on mobile */}
+      <div className={styles.mobileHeader}>
+        <button
+          className={styles.mobileMenuButton}
+          onClick={toggleCollapse}
+          aria-label="Toggle menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div className={styles.mobileLogo}>
+          <LiahonaIcon size={28} />
+          <h1 className={styles.mobileTitle}>Liahona Everyday</h1>
+        </div>
+      </div>
+
       {/* Mobile overlay when sidebar is open */}
       {isMobile && !isCollapsed && (
         <div className={styles.overlay} onClick={toggleCollapse} />
       )}
 
-      <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}>
-        <div className={styles.header} onClick={toggleCollapse} style={{ cursor: 'pointer' }}>
+      <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''} ${isMobile ? styles.mobile : ''}`}>
+        <div className={styles.header} onClick={!isMobile ? toggleCollapse : undefined} style={{ cursor: isMobile ? 'default' : 'pointer' }}>
           <div className={styles.logoContainer}>
             <LiahonaIcon size={32} />
           </div>
@@ -117,6 +134,7 @@ export default function Sidebar() {
             <Link
               href="/"
               className={`${styles.navItem} ${pathname === '/' ? styles.active : ''}`}
+              onClick={isMobile ? toggleCollapse : undefined}
             >
               <span className={styles.icon}>🏠</span>
               <span>Home</span>
@@ -133,6 +151,7 @@ export default function Sidebar() {
                   className={`${styles.navItem} ${
                     pathname === `/role/${role.slug}` ? styles.active : ''
                   }`}
+                  onClick={isMobile ? toggleCollapse : undefined}
                 >
                   <span className={styles.icon}>{role.icon}</span>
                   <span>{role.label}</span>
@@ -175,7 +194,10 @@ export default function Sidebar() {
         {!isCollapsed && session?.user && (
           <div className={styles.userSection}>
             <button
-              onClick={() => router.push('/settings')}
+              onClick={() => {
+                router.push('/settings');
+                if (isMobile) toggleCollapse();
+              }}
               className={styles.userButton}
             >
               <div className={styles.userInfo}>
@@ -201,8 +223,8 @@ export default function Sidebar() {
           </div>
         )}
 
-        {/* Hamburger toggle button - only visible when collapsed */}
-        {isCollapsed && (
+        {/* Desktop hamburger - only visible when collapsed on desktop */}
+        {isCollapsed && !isMobile && (
           <button
             className={styles.hamburger}
             onClick={toggleCollapse}
