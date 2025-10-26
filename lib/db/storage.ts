@@ -1,5 +1,6 @@
 import { sql } from '@vercel/postgres';
 import { Topic, Role, StudySession } from '../types';
+import { DATABASE_SCHEMA } from './schema';
 
 /**
  * Database storage layer using Vercel Postgres
@@ -121,12 +122,42 @@ export const dbStorage = {
     await sql`DELETE FROM roles WHERE id = ${roleId} AND user_id = ${userId}`;
   },
 
-  // Initialize database (create tables) - now uses schema from lib/db/schema.sql
+  // Initialize database (create tables) - now uses schema from lib/db/schema.ts
   initializeDatabase: async (): Promise<void> => {
-    // Note: Tables should be created using schema.sql
-    // This method is kept for backward compatibility
-    // The actual schema creation happens via /api/init or Vercel Postgres dashboard
-    console.log('Database initialization is now handled via schema.sql');
+    console.log('Initializing database with schema...');
+
+    // Remove comment lines and split by semicolons
+    const cleanedSchema = DATABASE_SCHEMA
+      .split('\n')
+      .filter(line => !line.trim().startsWith('--'))
+      .join('\n');
+
+    const statements = cleanedSchema
+      .split(';')
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+
+    console.log(`Executing ${statements.length} SQL statements...`);
+
+    for (let i = 0; i < statements.length; i++) {
+      const statement = statements[i];
+      try {
+        await sql.query(statement);
+        const preview = statement.substring(0, 60).replace(/\s+/g, ' ');
+        console.log(`[${i + 1}/${statements.length}] Executed: ${preview}...`);
+      } catch (error: any) {
+        // Ignore "already exists" errors
+        if (error.message?.includes('already exists')) {
+          console.log(`[${i + 1}/${statements.length}] Skipped (already exists)`);
+        } else {
+          console.error(`[${i + 1}/${statements.length}] Error executing statement:`, statement);
+          console.error('Error:', error.message);
+          throw error;
+        }
+      }
+    }
+
+    console.log('Database schema initialization complete');
   },
 
   // Initialize default roles for a new user

@@ -1,15 +1,96 @@
 'use client';
 
+import { useState } from 'react';
 import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import LiahonaIcon from '@/components/LiahonaIcon';
 import styles from './login.module.css';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
   const handleGoogleSignIn = async () => {
     try {
       await signIn('google', { callbackUrl: '/' });
     } catch (error) {
       console.error('Sign in error:', error);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    try {
+      await signIn('apple', { callbackUrl: '/' });
+    } catch (error) {
+      console.error('Sign in error:', error);
+    }
+  };
+
+  const handleEmailSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError('Invalid email or password');
+      } else {
+        router.push('/');
+      }
+    } catch (error) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Registration failed');
+        setLoading(false);
+        return;
+      }
+
+      // Auto sign in after registration
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError('Registration successful, but sign in failed. Please try logging in.');
+      } else {
+        router.push('/');
+      }
+    } catch (error) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,6 +126,88 @@ export default function LoginPage() {
             </svg>
             Continue with Google
           </button>
+
+          <button
+            onClick={handleAppleSignIn}
+            className={styles.appleButton}
+          >
+            <svg className={styles.icon} viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01M12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+            </svg>
+            Continue with Apple
+          </button>
+
+          <div className={styles.divider}>
+            <span>or</span>
+          </div>
+
+          <div className={styles.tabContainer}>
+            <button
+              className={`${styles.tab} ${mode === 'signin' ? styles.activeTab : ''}`}
+              onClick={() => {
+                setMode('signin');
+                setError('');
+              }}
+            >
+              Sign In
+            </button>
+            <button
+              className={`${styles.tab} ${mode === 'signup' ? styles.activeTab : ''}`}
+              onClick={() => {
+                setMode('signup');
+                setError('');
+              }}
+            >
+              Sign Up
+            </button>
+          </div>
+
+          <form onSubmit={mode === 'signin' ? handleEmailSignIn : handleSignUp} className={styles.form}>
+            {mode === 'signup' && (
+              <div className={styles.formGroup}>
+                <label htmlFor="name" className={styles.label}>Name</label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className={styles.input}
+                  required
+                />
+              </div>
+            )}
+
+            <div className={styles.formGroup}>
+              <label htmlFor="email" className={styles.label}>Email</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={styles.input}
+                required
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="password" className={styles.label}>Password</label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={styles.input}
+                required
+                minLength={6}
+              />
+            </div>
+
+            {error && <div className={styles.error}>{error}</div>}
+
+            <button type="submit" className={styles.submitButton} disabled={loading}>
+              {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
+            </button>
+          </form>
         </div>
 
         <div className={styles.quote}>

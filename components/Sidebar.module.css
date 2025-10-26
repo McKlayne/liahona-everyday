@@ -86,25 +86,25 @@
 }
 
 .addRoleButton {
-  background: var(--cyan);
-  color: var(--base03);
-  border: none;
-  border-radius: 4px;
-  width: 24px;
-  height: 24px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.5rem;
+  margin: 0.5rem 1rem;
+  background: transparent;
+  color: var(--cyan);
+  border: 2px dashed var(--base01);
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 1.25rem;
-  font-weight: 700;
-  line-height: 1;
+  font-size: 0.9375rem;
+  font-weight: 500;
   transition: all 0.2s ease;
 }
 
 .addRoleButton:hover {
-  background: var(--blue);
-  transform: scale(1.1);
+  background: var(--base03);
+  border-color: var(--cyan);
+  color: var(--blue);
 }
 
 .navItemWrapper {
@@ -167,12 +167,25 @@
   margin-top: auto;
 }
 
+.userButton {
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.userButton:hover {
+  background-color: var(--base03);
+}
+
 .userInfo {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  margin-bottom: 0.5rem;
 }
 
 .userAvatar {
@@ -187,6 +200,20 @@
   font-size: 1.25rem;
   font-weight: 700;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.userImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.userInitial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .userData {

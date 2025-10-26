@@ -34,12 +34,24 @@ cd liahona-everyday
 npm install
 ```
 
-3. Run the development server:
+3. Set up environment variables:
+```bash
+cp .env.example .env.local
+```
+
+Then edit `.env.local` and configure:
+- `AUTH_SECRET`: Generate with `openssl rand -base64 32`
+- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`: Get from [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+- `NEXTAUTH_URL`: Set to `http://localhost:3000` for local development
+
+**Important**: The app requires Google OAuth for authentication. Without proper credentials, you'll get 500 errors on API calls.
+
+4. Run the development server:
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## How to Use
 
@@ -72,16 +84,17 @@ Return to the Home page to see:
 - **Framework**: Next.js 14 with App Router
 - **Language**: TypeScript
 - **Styling**: CSS Modules with Solarized Dark theme
-- **Storage**: LocalStorage (client-side)
+- **Authentication**: NextAuth.js with Google OAuth
+- **Storage**: File-based (development) / Vercel Postgres (production)
 - **Content**: Links to churchofjesuschrist.org resources
 
 ## Data Storage
 
-All data is stored locally in your browser's LocalStorage. This means:
-- Your data is private and never leaves your device
-- No account or login required
-- Data persists across browser sessions
-- Data is specific to each browser/device
+The app uses an adaptive storage strategy:
+- **Development**: File-based storage in the `/data` directory for quick local development
+- **Production**: Vercel Postgres database for scalable, reliable cloud storage
+- **Authentication**: Secure user authentication via Google OAuth
+- Data is automatically synced to the appropriate storage backend based on environment
 
 ## Content Sources
 
