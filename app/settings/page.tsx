@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import MainLayout from '@/components/MainLayout';
 import { storage } from '@/lib/storage';
-import { UserSettings } from '@/lib/types';
+import { UserSettings, ApiKey } from '@/lib/types';
 import styles from './page.module.css';
 
 export default function SettingsPage() {
@@ -13,12 +13,98 @@ export default function SettingsPage() {
   const { data: session, status } = useSession();
   const [settings, setSettings] = useState<UserSettings>(storage.getSettings());
   const [isSaving, setIsSaving] = useState(false);
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  const [isLoadingKeys, setIsLoadingKeys] = useState(true);
+  const [newKeyName, setNewKeyName] = useState('');
+  const [isCreatingKey, setIsCreatingKey] = useState(false);
+  const [showNewKeyModal, setShowNewKeyModal] = useState(false);
+  const [newlyCreatedKey, setNewlyCreatedKey] = useState<string>('');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
     }
   }, [status, router]);
+
+  useEffect(() => {
+    if (session?.user) {
+      loadApiKeys();
+    }
+  }, [session]);
+
+  const loadApiKeys = async () => {
+    setIsLoadingKeys(true);
+    try {
+      const response = await fetch('/api/api-keys');
+      if (response.ok) {
+        const data = await response.json();
+        setApiKeys(data.apiKeys);
+      }
+    } catch (error) {
+      console.error('Error loading API keys:', error);
+    } finally {
+      setIsLoadingKeys(false);
+    }
+  };
+
+  const handleCreateApiKey = async () => {
+    if (!newKeyName.trim()) {
+      alert('Please enter a name for the API key');
+      return;
+    }
+
+    setIsCreatingKey(true);
+    try {
+      const response = await fetch('/api/api-keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keyName: newKeyName.trim() }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setNewlyCreatedKey(data.fullKey);
+        setShowNewKeyModal(true);
+        setNewKeyName('');
+        loadApiKeys();
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error creating API key:', error);
+      alert('Failed to create API key');
+    } finally {
+      setIsCreatingKey(false);
+    }
+  };
+
+  const handleRevokeApiKey = async (keyId: string, keyName: string) => {
+    if (!confirm(`Are you sure you want to revoke the API key "${keyName}"?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/api-keys/${keyId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        loadApiKeys();
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error revoking API key:', error);
+      alert('Failed to revoke API key');
+    }
+  };
+
+  const handleCopyKey = () => {
+    navigator.clipboard.writeText(newlyCreatedKey);
+    alert('API key copied to clipboard!');
+  };
 
   const applyTheme = (newSettings: UserSettings) => {
     // Apply theme immediately
@@ -234,6 +320,103 @@ export default function SettingsPage() {
             </div>
           </section>
 
+          {/* API Keys Section */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>API Keys</h2>
+            <p className={styles.description}>
+              Create API keys to integrate Liahona Everyday with Claude Desktop or other applications via MCP (Model Context Protocol).
+            </p>
+
+            <div className={styles.apiKeyCreate}>
+              <input
+                type="text"
+                placeholder="Enter a name for this key (e.g., 'Claude Desktop')"
+                value={newKeyName}
+                onChange={(e) => setNewKeyName(e.target.value)}
+                className={styles.input}
+                onKeyPress={(e) => e.key === 'Enter' && handleCreateApiKey()}
+              />
+              <button
+                onClick={handleCreateApiKey}
+                disabled={isCreatingKey || !newKeyName.trim()}
+                className={styles.createButton}
+              >
+                {isCreatingKey ? 'Creating...' : 'Create API Key'}
+              </button>
+            </div>
+
+            {isLoadingKeys ? (
+              <div className={styles.loadingKeys}>Loading API keys...</div>
+            ) : apiKeys.length === 0 ? (
+              <div className={styles.noKeys}>
+                No API keys yet. Create one to get started.
+              </div>
+            ) : (
+              <div className={styles.apiKeysList}>
+                {apiKeys.map((key) => (
+                  <div
+                    key={key.id}
+                    className={`${styles.apiKeyItem} ${key.revoked ? styles.revoked : ''}`}
+                  >
+                    <div className={styles.keyInfo}>
+                      <div className={styles.keyName}>{key.keyName}</div>
+                      <div className={styles.keyMeta}>
+                        <span className={styles.keyPrefix}>{key.keyPrefix}...</span>
+                        <span className={styles.keyDate}>
+                          Created: {new Date(key.createdAt).toLocaleDateString()}
+                        </span>
+                        {key.lastUsedAt && (
+                          <span className={styles.keyDate}>
+                            Last used: {new Date(key.lastUsedAt).toLocaleDateString()}
+                          </span>
+                        )}
+                        {key.revoked && (
+                          <span className={styles.revokedBadge}>Revoked</span>
+                        )}
+                      </div>
+                    </div>
+                    {!key.revoked && (
+                      <button
+                        onClick={() => handleRevokeApiKey(key.id, key.keyName)}
+                        className={styles.revokeButton}
+                      >
+                        Revoke
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className={styles.mcpInstructions}>
+              <h3>Setting up MCP with Claude Desktop</h3>
+              <ol>
+                <li>Create an API key above</li>
+                <li>Open Claude Desktop settings</li>
+                <li>Navigate to the MCP Servers section</li>
+                <li>Add a new server with the following configuration:</li>
+              </ol>
+              <pre className={styles.codeBlock}>
+{`{
+  "liahona-everyday": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "@modelcontextprotocol/server-fetch",
+      "https://liahona-everyday.vercel.app/api/mcp"
+    ],
+    "env": {
+      "LIAHONA_API_KEY": "your-api-key-here"
+    }
+  }
+}`}
+              </pre>
+              <p className={styles.note}>
+                Replace <code>your-api-key-here</code> with the API key you created above.
+              </p>
+            </div>
+          </section>
+
           {/* Actions */}
           <div className={styles.actions}>
             <button
@@ -248,6 +431,32 @@ export default function SettingsPage() {
             </button>
           </div>
         </div>
+
+        {/* New API Key Modal */}
+        {showNewKeyModal && (
+          <div className={styles.modal} onClick={() => setShowNewKeyModal(false)}>
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <h2>API Key Created Successfully!</h2>
+              <p className={styles.warning}>
+                ⚠️ <strong>Important:</strong> Copy this key now. You won't be able to see it again!
+              </p>
+              <div className={styles.keyDisplay}>
+                <code>{newlyCreatedKey}</code>
+              </div>
+              <div className={styles.modalActions}>
+                <button onClick={handleCopyKey} className={styles.copyButton}>
+                  Copy to Clipboard
+                </button>
+                <button
+                  onClick={() => setShowNewKeyModal(false)}
+                  className={styles.closeButton}
+                >
+                  I've Saved It
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </MainLayout>
   );
