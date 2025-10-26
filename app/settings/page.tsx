@@ -389,30 +389,38 @@ export default function SettingsPage() {
             )}
 
             <div className={styles.mcpInstructions}>
-              <h3>Setting up MCP with Claude Desktop</h3>
-              <ol>
-                <li>Create an API key above</li>
-                <li>Open Claude Desktop settings</li>
-                <li>Navigate to the MCP Servers section</li>
-                <li>Add a new server with the following configuration:</li>
-              </ol>
+              <h3>Using Your API Key</h3>
+              <p className={styles.description}>
+                Your API key allows programmatic access to your Liahona Everyday data. Use it to integrate with external applications, scripts, or AI tools.
+              </p>
+
+              <h4>API Endpoint</h4>
+              <pre className={styles.codeBlock}>
+{`GET https://liahona-everyday.vercel.app/api/mcp`}
+              </pre>
+
+              <h4>Example Usage (curl)</h4>
+              <pre className={styles.codeBlock}>
+{`curl -H "Authorization: Bearer your-api-key-here" \\
+     https://liahona-everyday.vercel.app/api/mcp`}
+              </pre>
+
+              <h4>Response Format</h4>
               <pre className={styles.codeBlock}>
 {`{
-  "liahona-everyday": {
-    "command": "npx",
-    "args": [
-      "-y",
-      "@modelcontextprotocol/server-fetch",
-      "https://liahona-everyday.vercel.app/api/mcp"
-    ],
-    "env": {
-      "LIAHONA_API_KEY": "your-api-key-here"
-    }
-  }
+  "userId": "user-123",
+  "roles": [...],
+  "topics": [...]
 }`}
               </pre>
+
               <p className={styles.note}>
-                Replace <code>your-api-key-here</code> with the API key you created above.
+                Replace <code>your-api-key-here</code> with the API key you created above. Keep your API key secure and never share it publicly.
+              </p>
+
+              <h4>Future: MCP Server Integration</h4>
+              <p className={styles.description}>
+                MCP (Model Context Protocol) integration with Claude Desktop is coming soon. This will allow Claude to directly access your study topics and roles during conversations.
               </p>
             </div>
           </section>
