@@ -93,9 +93,10 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       const isOnAuthRoute = nextUrl.pathname.startsWith('/api/auth');
       const isOnRegisterRoute = nextUrl.pathname === '/api/register';
       const isOnInitRoute = nextUrl.pathname === '/api/init';
+      const isOnDebugRoute = nextUrl.pathname === '/api/debug-env';
 
-      // Allow access to auth routes, register route, and init route
-      if (isOnAuthRoute || isOnRegisterRoute || isOnInitRoute) {
+      // Allow access to auth routes, register route, init route, and debug route
+      if (isOnAuthRoute || isOnRegisterRoute || isOnInitRoute || isOnDebugRoute) {
         return true;
       }
 
