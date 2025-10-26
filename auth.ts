@@ -4,6 +4,12 @@ import Apple from 'next-auth/providers/apple';
 import Credentials from 'next-auth/providers/credentials';
 import { verifyCredentials } from './lib/users';
 
+// Debug logging for environment variables
+console.log('[AUTH] Initializing NextAuth with environment:');
+console.log('[AUTH] NEXTAUTH_URL:', process.env.NEXTAUTH_URL || 'not set');
+console.log('[AUTH] GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? `${process.env.GOOGLE_CLIENT_ID.substring(0, 20)}...` : 'not set');
+console.log('[AUTH] NODE_ENV:', process.env.NODE_ENV);
+
 export const { auth, signIn, signOut, handlers } = NextAuth({
   providers: [
     Google({
@@ -50,9 +56,24 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     strategy: 'jwt',
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      console.log('[AUTH] signIn callback triggered');
+      console.log('[AUTH] Provider:', account?.provider);
+      console.log('[AUTH] User email:', user?.email);
+
+      if (account?.provider === 'google') {
+        console.log('[AUTH] Google OAuth sign in attempt');
+        console.log('[AUTH] Account type:', account.type);
+        console.log('[AUTH] Has access token:', !!account.access_token);
+      }
+
+      return true;
+    },
     async jwt({ token, user, account }) {
       // First time JWT callback is run, user object is available
       if (account && user) {
+        console.log('[AUTH] JWT callback - new login');
+        console.log('[AUTH] Provider:', account.provider);
         token.id = (user.id || token.sub) as string;
       }
       return token;
