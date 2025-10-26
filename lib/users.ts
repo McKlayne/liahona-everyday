@@ -1,9 +1,5 @@
 import bcrypt from 'bcryptjs';
-
-// Simple in-memory user storage for development
-// In production, this should use a database
-// Using a module-level variable for server-side storage
-let usersStore: StoredUser[] = [];
+import { sql } from '@vercel/postgres';
 
 export interface StoredUser {
   id: string;
@@ -11,23 +7,22 @@ export interface StoredUser {
   email: string;
   password: string; // hashed
   image?: string;
-  createdAt: number;
-}
-
-// Get all users
-function getAllUsers(): StoredUser[] {
-  return usersStore;
-}
-
-// Save all users
-function saveAllUsers(users: StoredUser[]): void {
-  usersStore = users;
+  created_at?: Date;
 }
 
 // Find user by email
-export function getUserByEmail(email: string): StoredUser | null {
-  const users = getAllUsers();
-  return users.find(u => u.email.toLowerCase() === email.toLowerCase()) || null;
+export async function getUserByEmail(email: string): Promise<StoredUser | null> {
+  try {
+    const { rows } = await sql`
+      SELECT id, name, email, password, image, created_at
+      FROM users
+      WHERE LOWER(email) = LOWER(${email})
+    `;
+    return rows[0] as StoredUser || null;
+  } catch (error) {
+    console.error('Error fetching user by email:', error);
+    return null;
+  }
 }
 
 // Create a new user
@@ -45,31 +40,38 @@ export async function createUser(
     return { success: false, error: 'Password must be at least 6 characters' };
   }
 
-  // Check if user already exists
-  if (getUserByEmail(email)) {
-    return { success: false, error: 'Email already registered' };
+  try {
+    // Check if user already exists
+    const existingUser = await getUserByEmail(email);
+    if (existingUser) {
+      return { success: false, error: 'Email already registered' };
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user ID
+    const userId = `user-${Date.now()}`;
+
+    // Insert user into database
+    await sql`
+      INSERT INTO users (id, name, email, password, created_at)
+      VALUES (${userId}, ${name}, ${email.toLowerCase()}, ${hashedPassword}, CURRENT_TIMESTAMP)
+    `;
+
+    // Fetch the created user (without password)
+    const { rows } = await sql`
+      SELECT id, name, email, image, created_at
+      FROM users
+      WHERE id = ${userId}
+    `;
+
+    const user = rows[0] as Omit<StoredUser, 'password'>;
+    return { success: true, user };
+  } catch (error) {
+    console.error('Error creating user:', error);
+    return { success: false, error: 'Failed to create user' };
   }
-
-  // Hash password
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  // Create user
-  const user: StoredUser = {
-    id: Date.now().toString(),
-    name,
-    email: email.toLowerCase(),
-    password: hashedPassword,
-    createdAt: Date.now(),
-  };
-
-  // Save user
-  const users = getAllUsers();
-  users.push(user);
-  saveAllUsers(users);
-
-  // Return user without password
-  const { password: _, ...userWithoutPassword } = user;
-  return { success: true, user: userWithoutPassword };
 }
 
 // Verify user credentials
@@ -77,19 +79,24 @@ export async function verifyCredentials(
   email: string,
   password: string
 ): Promise<Omit<StoredUser, 'password'> | null> {
-  const user = getUserByEmail(email);
+  try {
+    const user = await getUserByEmail(email);
 
-  if (!user) {
+    if (!user) {
+      return null;
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+
+    if (!isValid) {
+      return null;
+    }
+
+    // Return user without password
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  } catch (error) {
+    console.error('Error verifying credentials:', error);
     return null;
   }
-
-  const isValid = await bcrypt.compare(password, user.password);
-
-  if (!isValid) {
-    return null;
-  }
-
-  // Return user without password
-  const { password: _, ...userWithoutPassword } = user;
-  return userWithoutPassword;
 }
