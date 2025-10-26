@@ -123,10 +123,35 @@ export const dbStorage = {
 
   // Initialize database (create tables) - now uses schema from lib/db/schema.sql
   initializeDatabase: async (): Promise<void> => {
-    // Note: Tables should be created using schema.sql
-    // This method is kept for backward compatibility
-    // The actual schema creation happens via /api/init or Vercel Postgres dashboard
-    console.log('Database initialization is now handled via schema.sql');
+    console.log('Initializing database with schema.sql...');
+
+    // Read and execute schema.sql
+    const fs = await import('fs/promises');
+    const path = await import('path');
+
+    const schemaPath = path.join(process.cwd(), 'lib/db/schema.sql');
+    const schema = await fs.readFile(schemaPath, 'utf-8');
+
+    // Split by semicolons and execute each statement
+    const statements = schema
+      .split(';')
+      .map(s => s.trim())
+      .filter(s => s.length > 0 && !s.startsWith('--'));
+
+    for (const statement of statements) {
+      try {
+        await sql.query(statement);
+        console.log('Executed:', statement.substring(0, 50) + '...');
+      } catch (error: any) {
+        // Ignore "already exists" errors
+        if (!error.message?.includes('already exists')) {
+          console.error('Schema execution error:', error);
+          throw error;
+        }
+      }
+    }
+
+    console.log('Database schema initialization complete');
   },
 
   // Initialize default roles for a new user
