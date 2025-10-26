@@ -17,6 +17,24 @@ export default function Sidebar() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [showRoleManager, setShowRoleManager] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | undefined>();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile on mount and window resize
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      // Auto-collapse on mobile
+      if (mobile && !isCollapsed) {
+        setIsCollapsed(true);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     loadRoles();
@@ -68,104 +86,134 @@ export default function Sidebar() {
     setEditingRole(undefined);
   };
 
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   const existingSlugs = roles.map(r => r.slug);
 
   return (
-    <aside className={styles.sidebar}>
-      <div className={styles.header}>
-        <div className={styles.logoContainer}>
-          <LiahonaIcon size={32} />
-        </div>
-        <h1 className={styles.title}>Liahona Everyday</h1>
-        <p className={styles.subtitle}>Book of Mormon Study</p>
-      </div>
+    <>
+      {/* Mobile overlay when sidebar is open */}
+      {isMobile && !isCollapsed && (
+        <div className={styles.overlay} onClick={toggleCollapse} />
+      )}
 
-      <nav className={styles.nav}>
-        <Link
-          href="/"
-          className={`${styles.navItem} ${pathname === '/' ? styles.active : ''}`}
-        >
-          <span className={styles.icon}>🏠</span>
-          <span>Home</span>
-        </Link>
-
-        <div className={styles.sectionHeader}>
-          <span className={styles.sectionTitle}>Roles</span>
+      <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}>
+        <div className={styles.header} onClick={toggleCollapse} style={{ cursor: 'pointer' }}>
+          <div className={styles.logoContainer}>
+            <LiahonaIcon size={32} />
+          </div>
+          {!isCollapsed && (
+            <>
+              <h1 className={styles.title}>Liahona Everyday</h1>
+              <p className={styles.subtitle}>Book of Mormon Study</p>
+            </>
+          )}
         </div>
 
-        {roles.map((role) => (
-          <div key={role.id} className={styles.navItemWrapper}>
+        {!isCollapsed && (
+          <nav className={styles.nav}>
             <Link
-              href={`/role/${role.slug}`}
-              className={`${styles.navItem} ${
-                pathname === `/role/${role.slug}` ? styles.active : ''
-              }`}
+              href="/"
+              className={`${styles.navItem} ${pathname === '/' ? styles.active : ''}`}
             >
-              <span className={styles.icon}>{role.icon}</span>
-              <span>{role.label}</span>
+              <span className={styles.icon}>🏠</span>
+              <span>Home</span>
             </Link>
+
+            <div className={styles.sectionHeader}>
+              <span className={styles.sectionTitle}>Roles</span>
+            </div>
+
+            {roles.map((role) => (
+              <div key={role.id} className={styles.navItemWrapper}>
+                <Link
+                  href={`/role/${role.slug}`}
+                  className={`${styles.navItem} ${
+                    pathname === `/role/${role.slug}` ? styles.active : ''
+                  }`}
+                >
+                  <span className={styles.icon}>{role.icon}</span>
+                  <span>{role.label}</span>
+                </Link>
+                <button
+                  className={styles.editButton}
+                  onClick={() => handleEditRole(role)}
+                  title="Edit role"
+                >
+                  ✎
+                </button>
+              </div>
+            ))}
+
             <button
-              className={styles.editButton}
-              onClick={() => handleEditRole(role)}
-              title="Edit role"
+              className={styles.addRoleButton}
+              onClick={handleAddRole}
+              title="Add new role"
             >
-              ✎
+              <span className={styles.icon}>+</span>
+              <span>Add Role</span>
+            </button>
+          </nav>
+        )}
+
+        {showRoleManager && (
+          <div className={styles.modalOverlay}>
+            <div className={styles.modalContent}>
+              <RoleManager
+                role={editingRole}
+                onSave={handleSaveRole}
+                onCancel={handleCancel}
+                onDelete={handleDeleteRole}
+                existingSlugs={existingSlugs}
+              />
+            </div>
+          </div>
+        )}
+
+        {!isCollapsed && session?.user && (
+          <div className={styles.userSection}>
+            <button
+              onClick={() => router.push('/settings')}
+              className={styles.userButton}
+            >
+              <div className={styles.userInfo}>
+                <div className={styles.userAvatar}>
+                  {session.user.image ? (
+                    <img
+                      src={session.user.image}
+                      alt={session.user.name || 'User'}
+                      className={styles.userImage}
+                    />
+                  ) : (
+                    <span className={styles.userInitial}>
+                      {session.user.name?.charAt(0).toUpperCase() || '?'}
+                    </span>
+                  )}
+                </div>
+                <div className={styles.userData}>
+                  <div className={styles.userName}>{session.user.name}</div>
+                  <div className={styles.userEmail}>{session.user.email}</div>
+                </div>
+              </div>
             </button>
           </div>
-        ))}
+        )}
 
-        <button
-          className={styles.addRoleButton}
-          onClick={handleAddRole}
-          title="Add new role"
-        >
-          <span className={styles.icon}>+</span>
-          <span>Add Role</span>
-        </button>
-      </nav>
-
-      {showRoleManager && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <RoleManager
-              role={editingRole}
-              onSave={handleSaveRole}
-              onCancel={handleCancel}
-              onDelete={handleDeleteRole}
-              existingSlugs={existingSlugs}
-            />
-          </div>
-        </div>
-      )}
-
-      {session?.user && (
-        <div className={styles.userSection}>
+        {/* Hamburger toggle button - only visible when collapsed */}
+        {isCollapsed && (
           <button
-            onClick={() => router.push('/settings')}
-            className={styles.userButton}
+            className={styles.hamburger}
+            onClick={toggleCollapse}
+            aria-label="Toggle sidebar"
           >
-            <div className={styles.userInfo}>
-              <div className={styles.userAvatar}>
-                {session.user.image ? (
-                  <img
-                    src={session.user.image}
-                    alt={session.user.name || 'User'}
-                    className={styles.userImage}
-                  />
-                ) : (
-                  <span className={styles.userInitial}>
-                    {session.user.name?.charAt(0).toUpperCase() || '?'}
-                  </span>
-                )}
-              </div>
-              <div className={styles.userData}>
-                <div className={styles.userName}>{session.user.name}</div>
-                <div className={styles.userEmail}>{session.user.email}</div>
-              </div>
-            </div>
+            <span></span>
+            <span></span>
+            <span></span>
           </button>
-        </div>
-      )}
-    </aside>
+        )}
+      </aside>
+    </>
   );
 }
