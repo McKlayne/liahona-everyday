@@ -55,3 +55,13 @@ export interface StudySession {
   endTime?: number;
   duration: number; // in seconds
 }
+
+export interface ApiKey {
+  id: string;
+  userId: string;
+  keyName: string;
+  keyPrefix: string; // First 8 chars for display (e.g., "liahona_abcd1234")
+  createdAt: string;
+  lastUsedAt?: string;
+  revoked: boolean;
+}
