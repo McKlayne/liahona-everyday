@@ -2,7 +2,8 @@ import NextAuth from 'next-auth';
 import Google from 'next-auth/providers/google';
 import Apple from 'next-auth/providers/apple';
 import Credentials from 'next-auth/providers/credentials';
-import { verifyCredentials } from './lib/users';
+import { verifyCredentials, upsertOAuthUser } from './lib/users';
+import { dbStorage } from './lib/db/storage';
 
 // Debug logging for environment variables
 console.log('[AUTH] Initializing NextAuth with environment:');
@@ -61,10 +62,34 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       console.log('[AUTH] Provider:', account?.provider);
       console.log('[AUTH] User email:', user?.email);
 
-      if (account?.provider === 'google') {
-        console.log('[AUTH] Google OAuth sign in attempt');
+      // For OAuth providers (Google, Apple), ensure user exists in database
+      if (account?.provider === 'google' || account?.provider === 'apple') {
+        console.log('[AUTH] OAuth sign in attempt');
         console.log('[AUTH] Account type:', account.type);
-        console.log('[AUTH] Has access token:', !!account.access_token);
+
+        if (user.email && user.name && account.providerAccountId) {
+          try {
+            // Create or update user in database
+            // Use the providerAccountId as the user ID to ensure consistency
+            await upsertOAuthUser(
+              account.providerAccountId,
+              user.name,
+              user.email,
+              user.image || undefined
+            );
+            console.log('[AUTH] OAuth user upserted successfully');
+
+            // Initialize default roles for new users
+            const existingRoles = await dbStorage.getRoles(account.providerAccountId);
+            if (existingRoles.length === 0) {
+              await dbStorage.initializeUserRoles(account.providerAccountId);
+              console.log('[AUTH] Initialized default roles for new user');
+            }
+          } catch (error) {
+            console.error('[AUTH] Error upserting OAuth user:', error);
+            // Don't block sign-in if database update fails
+          }
+        }
       }
 
       return true;
@@ -74,7 +99,14 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       if (account && user) {
         console.log('[AUTH] JWT callback - new login');
         console.log('[AUTH] Provider:', account.provider);
-        token.id = (user.id || token.sub) as string;
+
+        // For OAuth providers, use providerAccountId as the user ID
+        // This matches what we stored in the database
+        if (account.provider === 'google' || account.provider === 'apple') {
+          token.id = account.providerAccountId;
+        } else {
+          token.id = (user.id || token.sub) as string;
+        }
       }
       return token;
     },

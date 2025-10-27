@@ -100,3 +100,38 @@ export async function verifyCredentials(
     return null;
   }
 }
+
+// Create or update OAuth user (for Google, Apple, etc.)
+export async function upsertOAuthUser(
+  id: string,
+  name: string,
+  email: string,
+  image?: string
+): Promise<void> {
+  try {
+    // Check if user exists
+    const { rows } = await sql`
+      SELECT id FROM users WHERE id = ${id}
+    `;
+
+    if (rows.length > 0) {
+      // Update existing user
+      await sql`
+        UPDATE users
+        SET name = ${name}, email = ${email.toLowerCase()}, image = ${image || null}
+        WHERE id = ${id}
+      `;
+      console.log('[USERS] Updated OAuth user:', id);
+    } else {
+      // Insert new OAuth user (password is empty string for OAuth users)
+      await sql`
+        INSERT INTO users (id, name, email, password, image, created_at)
+        VALUES (${id}, ${name}, ${email.toLowerCase()}, '', ${image || null}, CURRENT_TIMESTAMP)
+      `;
+      console.log('[USERS] Created new OAuth user:', id);
+    }
+  } catch (error) {
+    console.error('Error upserting OAuth user:', error);
+    throw error;
+  }
+}
